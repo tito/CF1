@@ -5,6 +5,8 @@ Made using the Kivy Python lib
 
 Launch the UI2.py script
 
+Functionalities: [WATCH](https://www.facebook.com/CircleFade/videos/2054554641525727/)
+
 
 
 
