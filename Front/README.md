@@ -3,6 +3,9 @@
 
 Made using the Kivy Python lib
 
+Launch the UI2.py script
+
+
 
 
 
