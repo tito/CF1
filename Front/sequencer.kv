@@ -1,0 +1,890 @@
+
+# Custom button
+<CustButton@ToggleButton>:
+    font_size: 32
+    size: 45,45
+    text: ""
+    background_color: .68,.68,.84,1
+
+<CustToggleButton@ToggleButton>:
+    font_size: 25
+    font_name:"Calibri"
+    background_color: .68,.68,.84,1
+
+<CustButton2@Button>:
+    font_size: 15
+   
+    size: 46,45
+    text: ""
+
+<CustButton3@Button>:
+    font_size: 15
+    size: 45,35
+
+    
+
+ 
+
+<SeqLayout>:
+    id: sequencer
+    b101: b101
+    b100: b100
+    b200: b200
+    b300: b300
+    b400: b400
+    b500: b500
+    b600: b600
+    b700: b700
+    b800: b800
+
+    b901: b901
+    b902: b902
+    b903: b903
+    b904: b904
+    b905: b905
+    b906: b906
+    b907: b907
+    b908: b908
+    b909: b909
+    b910: b910
+    b911: b911
+    b912: b912
+    b913: b913
+    b914: b914
+    b915: b915
+    b916: b916
+
+
+
+    b001:b001
+    b002:b002
+    b003:b003
+    b004:b004
+    b005:b005
+    b006:b006
+    b007:b007
+    b008:b008
+    b009:b009
+    b010:b010
+    b011:b011
+    b012:b012
+    b013:b013
+    b014:b014
+    b015:b015
+
+
+
+    canvas.before:
+
+
+        Color:
+            rgba: (.37, .39, .45, 0.4)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: (.37, .39, .45, 0.7)
+        Rectangle:
+            pos: 235,0
+            size: 2,375 
+        Rectangle:
+            pos: 423,0
+            size: 2,375
+        Rectangle:
+            pos: 611,0
+            size: 2,375 
+        
+
+
+
+    CustButton2:
+        pos: 1,1
+        text: "C3"
+        id:b100
+        background_color: 255,255,255,0.8
+        color: 0,0,0,1
+        on_press: sequencer.moveYup()
+    CustButton2:
+        pos: 1,48
+        text: "C#3"
+        id:b200
+        background_color: 0,0,0,0.7
+        on_press: sequencer.moveYdw()
+    CustButton2:
+        pos: 1,95
+        text: "D3"
+        id:b300
+        background_color: 255,255,255,0.8
+        color: 0,0,0,1
+        on_press: sequencer.loadseq()
+    CustButton2:
+        pos: 1,142
+        text: "D#3"
+        id:b400
+        background_color: 0,0,0,0.7
+        on_press: sequencer.moveXrgh()
+    CustButton2:
+        pos: 1,189
+        text: "E3"
+        id:b500
+        background_color: 255,255,255,0.8
+        color: 0,0,0,1
+        on_press: sequencer.moveXlft()
+    CustButton2:
+        pos: 1,236
+        text: "F3"
+        id:b600
+        background_color: 255,255,255,0.8
+        color: 0,0,0,1
+        on_press: sequencer.zoomin()
+    CustButton2:
+        pos: 1,283
+        text: "F#3"
+        id:b700
+        background_color: 0,0,0,0.7
+        on_press: sequencer.zoomout()
+    CustButton2:
+        pos: 1,330
+        text: "G3"
+        id:b800
+        background_color: 255,255,255,0.8
+        color: 0,0,0,1
+
+    
+
+
+    CustButton:
+        pos: 49,1
+        id:b101
+        on_press: sequencer.monitor(b101)
+    CustButton:
+        pos: 96,1
+        id:b102
+        on_press: sequencer.monitor(b102)
+    CustButton:
+        pos: 143,1
+        id:b103
+        on_press: sequencer.monitor(b103)
+    CustButton:
+        pos: 190,1
+        id:b104
+        on_press: sequencer.monitor(b104)
+    CustButton:
+        pos: 237,1
+        id:b105
+        on_press: sequencer.monitor(b105)
+    CustButton:
+        pos: 284,1
+        id:b106
+        on_press: sequencer.monitor(b106)
+    CustButton:
+        pos: 331,1
+        id:b107
+        on_press: sequencer.monitor(b107)
+    CustButton:
+        pos: 378,1
+        id:b108
+        on_press: sequencer.monitor(b108)
+    CustButton:
+        pos: 425,1
+        id:b109
+        on_press: sequencer.monitor(b109)
+    CustButton:
+        pos: 472,1
+        id:b110
+        on_press: sequencer.monitor(b110)
+    CustButton:
+        pos: 519,1
+        id:b111
+        on_press: sequencer.monitor(b111)
+    CustButton:
+        pos: 566,1
+        id:b112
+        on_press: sequencer.monitor(b112)
+    CustButton:
+        pos: 613,1
+        id:b113
+        on_press: sequencer.monitor(b113)
+    CustButton:
+        pos: 660,1 
+        id:b114
+        on_press: sequencer.monitor(b114)
+    CustButton:
+        pos: 707,1
+        id:b115
+        on_press: sequencer.monitor(b115)
+    CustButton:
+        pos: 754,1
+        id:b116
+        on_press: sequencer.monitor(b116)
+
+
+    CustButton:
+        pos: 49,48
+        id:b201
+        on_press: sequencer.monitor(b201)
+    CustButton:
+        pos: 96,48
+        id:b202
+        on_press: sequencer.monitor(b202)
+    CustButton:
+        pos: 143,48
+        id:b203
+        on_press: sequencer.monitor(b203)
+    CustButton:
+        pos: 190,48
+        id:b204
+        on_press: sequencer.monitor(b204)
+    CustButton:
+        pos: 237,48
+        id:b205
+        on_press: sequencer.monitor(b205)
+    CustButton:
+        pos: 284,48
+        id:b206
+        on_press: sequencer.monitor(b206)
+    CustButton:
+        pos: 331,48
+        id:b207
+        on_press: sequencer.monitor(b207)
+    CustButton:
+        pos: 378,48
+        id:b208
+        on_press: sequencer.monitor(b208)
+    CustButton:
+        pos: 425,48
+        id:b209
+        on_press: sequencer.monitor(b209)
+    CustButton:
+        pos: 472,48
+        id:b210
+        on_press: sequencer.monitor(b210)
+    CustButton:
+        pos: 519,48
+        id:b211
+        on_press: sequencer.monitor(b211)
+    CustButton:
+        pos: 566,48
+        id:b212
+        on_press: sequencer.monitor(b212)
+    CustButton:
+        pos: 613,48
+        id:b213
+        on_press: sequencer.monitor(b213)
+    CustButton:
+        pos: 660,48
+        id:b214
+        on_press: sequencer.monitor(b214)
+    CustButton:
+        pos: 707,48
+        id:b215
+        on_press: sequencer.monitor(b215)
+    CustButton:
+        pos: 754,48
+        id:b216
+        on_press: sequencer.monitor(b216)
+
+    
+
+    CustButton:
+        pos: 49,95
+        id:b301
+        on_press: sequencer.monitor(b301)
+    CustButton:
+        pos: 96,95
+        id:b302
+        on_press: sequencer.monitor(b302)
+    CustButton:
+        pos: 143,95
+        id:b303
+        on_press: sequencer.monitor(b303)
+    CustButton:
+        pos: 190,95       
+        id:b304
+        on_press: sequencer.monitor(b304)
+    CustButton:
+        pos: 237,95
+        id:b305
+        on_press: sequencer.monitor(b305)
+    CustButton:
+        pos: 284,95
+        id:b306
+        on_press: sequencer.monitor(b306)
+    CustButton:
+        pos: 331,95
+        id:b307
+        on_press: sequencer.monitor(b307)
+    CustButton:
+        pos: 378,95
+        id:b308
+        on_press: sequencer.monitor(b308)
+    CustButton:
+        pos: 425,95
+        id:b309
+        on_press: sequencer.monitor(b309)
+    CustButton:
+        pos: 472,95
+        id:b310
+        on_press: sequencer.monitor(b310)
+    CustButton:
+        pos: 519,95
+        id:b311
+        on_press: sequencer.monitor(b311)
+    CustButton:
+        pos: 566,95
+        id:b312
+        on_press: sequencer.monitor(b312)
+    CustButton:
+        pos: 613,95
+        id:b313
+        on_press: sequencer.monitor(b313)
+    CustButton:
+        pos: 660,95
+        id:b314
+        on_press: sequencer.monitor(b314)
+    CustButton:
+        pos: 707,95
+        id:b315
+        on_press: sequencer.monitor(b315)
+    CustButton:
+        pos: 754,95
+        id:b316
+        on_press: sequencer.monitor(b316)
+
+
+    CustButton:
+        pos: 49,142
+        id:b401
+        on_press: sequencer.monitor(b401)
+    CustButton:
+        pos: 96,142
+        id:b402
+        on_press: sequencer.monitor(b402)
+    CustButton:
+        pos: 143,142
+        id:b403
+        on_press: sequencer.monitor(b403)
+    CustButton:
+        pos: 190,142
+        id:b404
+        on_press: sequencer.monitor(b404)
+    CustButton:
+        pos: 237,142
+        id:b405
+        on_press: sequencer.monitor(b405)
+    CustButton:
+        pos: 284,142
+        id:b406
+        on_press: sequencer.monitor(b406)
+    CustButton:
+        pos: 331,142
+        id:b407
+        on_press: sequencer.monitor(b407)
+    CustButton:
+        pos: 378,142
+        id:b408
+        on_press: sequencer.monitor(b408)
+    CustButton:
+        pos: 425,142
+        id:b409
+        on_press: sequencer.monitor(b409)
+    CustButton:
+        pos: 472,142
+        id:b410
+        on_press: sequencer.monitor(b410)
+    CustButton:
+        pos: 519,142
+        id:b411
+        on_press: sequencer.monitor(b411)
+    CustButton:
+        pos: 566,142
+        id:b412
+        on_press: sequencer.monitor(b412)
+    CustButton:
+        pos: 613,142
+        id:b413
+        on_press: sequencer.monitor(b413)
+    CustButton:
+        pos: 660,142
+        id:b414
+        on_press: sequencer.monitor(b414)
+    CustButton:
+        pos: 707,142
+        id:b415
+        on_press: sequencer.monitor(b415)
+    CustButton:
+        pos: 754,142
+        id:b416
+        on_press: sequencer.monitor(b416)
+
+
+
+    CustButton:
+        pos: 49,189
+        id:b501
+        on_press: sequencer.monitor(b501)
+    CustButton:
+        pos: 96,189
+        id:b502
+        on_press: sequencer.monitor(b502)
+    CustButton:
+        pos: 143,189
+        id:b503
+        on_press: sequencer.monitor(b503)
+    CustButton:
+        pos: 190,189
+        id:b504
+        on_press: sequencer.monitor(b504)
+    CustButton:
+        pos: 237,189
+        id:b505
+        on_press: sequencer.monitor(b505)
+    CustButton:
+        pos: 284,189
+        id:b506
+        on_press: sequencer.monitor(b506)
+    CustButton:
+        pos: 331,189
+        id:b507
+        on_press: sequencer.monitor(b507)
+    CustButton:
+        pos: 378,189
+        id:b508
+        on_press: sequencer.monitor(b508)
+    CustButton:
+        pos: 425,189
+        id:b509
+        on_press: sequencer.monitor(b509)
+    CustButton:
+        pos: 472,189
+        id:b510
+        on_press: sequencer.monitor(b510)
+    CustButton:
+        pos: 519,189
+        id:b511
+        on_press: sequencer.monitor(b511)
+    CustButton:
+        pos: 566,189
+        id:b512
+        on_press: sequencer.monitor(b512)
+    CustButton:
+        pos: 613,189
+        id:b513
+        on_press: sequencer.monitor(b513)
+    CustButton:
+        pos: 660,189
+        id:b514
+        on_press: sequencer.monitor(b514)
+    CustButton:
+        pos: 707,189
+        id:b515
+        on_press: sequencer.monitor(b515)
+    CustButton:
+        pos: 754,189
+        id:b516
+        on_press: sequencer.monitor(b516)
+
+
+
+
+
+    CustButton:
+        pos: 49,236
+        id:b601
+        on_press: sequencer.monitor(b601)
+    CustButton:
+        pos: 96,236
+        id:b602
+        on_press: sequencer.monitor(b602)
+    CustButton:
+        pos: 143,236
+        id:b603
+        on_press: sequencer.monitor(b603)
+    CustButton:
+        pos: 190,236
+        id:b604
+        on_press: sequencer.monitor(b604)
+    CustButton:
+        pos: 237,236
+        id:b605
+        on_press: sequencer.monitor(b605)
+    CustButton:
+        pos: 284,236
+        id:b606
+        on_press: sequencer.monitor(b606)
+    CustButton:
+        pos: 331,236
+        id:b607
+        on_press: sequencer.monitor(b607)
+    CustButton:
+        pos: 378,236
+        id:b608
+        on_press: sequencer.monitor(b608)
+    CustButton:
+        pos: 425,236
+        id:b609
+        on_press: sequencer.monitor(b609)
+    CustButton:
+        pos: 472,236
+        id:b610
+        on_press: sequencer.monitor(b610)
+    CustButton:
+        pos: 519,236
+        id:b611
+        on_press: sequencer.monitor(b611)
+    CustButton:
+        pos: 566,236
+        id:b612
+        on_press: sequencer.monitor(b612)
+    CustButton:
+        pos: 613,236
+        id:b613
+        on_press: sequencer.monitor(b613)
+    CustButton:
+        pos: 660,236
+        id:b614
+        on_press: sequencer.monitor(b614)
+    CustButton:
+        pos: 707,236
+        id:b615
+        on_press: sequencer.monitor(b615)
+    CustButton:
+        pos: 754,236
+        id:b616
+        on_press: sequencer.monitor(b616)
+
+
+    CustButton:
+        pos: 49,283
+        id:b701
+        on_press: sequencer.monitor(b701)
+    CustButton:
+        pos: 96,283
+        id:b702
+        on_press: sequencer.monitor(b702)
+    CustButton:
+        pos: 143,283
+        id:b703
+        on_press: sequencer.monitor(b703)
+    CustButton:
+        pos: 190,283
+        id:b704
+        on_press: sequencer.monitor(b704)
+    CustButton:
+        pos: 237,283
+        id:b705
+        on_press: sequencer.monitor(b705)
+    CustButton:
+        pos: 284,283
+        id:b706
+        on_press: sequencer.monitor(b706)
+    CustButton:
+        pos: 331,283
+        id:b707
+        on_press: sequencer.monitor(b707)
+    CustButton:
+        pos: 378,283
+        id:b708
+        on_press: sequencer.monitor(b708)
+    CustButton:
+        pos: 425,283
+        id:b709
+        on_press: sequencer.monitor(b709)
+    CustButton:
+        pos: 472,283
+        id:b710
+        on_press: sequencer.monitor(b710)
+    CustButton:
+        pos: 519,283
+        id:b711
+        on_press: sequencer.monitor(b711)
+    CustButton:
+        pos: 566,283
+        id:b712
+        on_press: sequencer.monitor(b712)
+    CustButton:
+        pos: 613,283
+        id:b713
+        on_press: sequencer.monitor(b713)
+    CustButton:
+        pos: 660,283
+        id:b714
+        on_press: sequencer.monitor(b714)
+    CustButton:
+        pos: 707,283
+        id:b715
+        on_press: sequencer.monitor(b715)
+    CustButton:
+        pos: 754,283
+        id:b716
+        on_press: sequencer.monitor(b716)
+
+    CustButton:
+        pos: 49,330
+        id:b801
+        on_press: sequencer.monitor(b801)
+    CustButton:
+        pos: 96,330
+        id:b802
+        on_press: sequencer.monitor(b802)
+    CustButton:
+        pos: 143,330
+        id:b803
+        on_press: sequencer.monitor(b803)
+    CustButton:
+        pos: 190,330
+        id:b804
+        on_press: sequencer.monitor(b804)
+    CustButton:
+        pos: 237,330
+        id:b805
+        on_press: sequencer.monitor(b805)
+    CustButton:
+        pos: 284,330
+        id:b806
+        on_press: sequencer.monitor(b806)
+    CustButton:
+        pos: 331,330
+        id:b807
+        on_press: sequencer.monitor(b807)
+    CustButton:
+        pos: 378,330
+        id:b808
+        on_press: sequencer.monitor(b808)
+    CustButton:
+        pos: 425,330
+        id:b809
+        on_press: sequencer.monitor(b809)
+    CustButton:
+        pos: 472,330
+        id:b810
+        on_press: sequencer.monitor(b810)
+    CustButton:
+        pos: 519,330
+        id:b811
+        on_press: sequencer.monitor(b811)
+    CustButton:
+        pos: 566,330
+        id:b812
+        on_press: sequencer.monitor(b812)
+    CustButton:
+        pos: 613,330
+        id:b813
+        on_press: sequencer.monitor(b813)
+    CustButton:
+        pos: 660,330
+        id:b814
+        on_press: sequencer.monitor(b814)
+    CustButton:
+        pos: 707,330
+        id:b815
+        on_press: sequencer.monitor(b815)
+    CustButton:
+        pos: 754,330
+        id:b816
+        on_press: sequencer.monitor(b816)
+
+
+    CustButton3:
+        pos: 49,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b901
+        text: "1"
+    CustButton3:
+        pos: 96,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b902
+        text: "."
+    CustButton3:
+        pos: 143,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b903
+        text: "."
+    CustButton3:
+        pos: 190,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b904
+        text: "."
+    CustButton3:
+        pos: 237,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b905
+        text: "2"
+    CustButton3:
+        pos: 284,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b906
+        text: "."
+    CustButton3:
+        pos: 331,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b907
+        text: "."
+    CustButton3:
+        pos: 378,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b908
+        text: "."
+    CustButton3:
+        pos: 425,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b909
+        text: "3"
+    CustButton3:
+        pos: 472,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b910
+        text: "."
+    CustButton3:
+        pos: 519,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b911
+        text: "."
+    CustButton3:
+        pos: 566,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b912
+        text: "."
+    CustButton3:
+        pos: 613,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b913
+        text: "4"
+    CustButton3:
+        pos: 660,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b914
+        text: "."
+    CustButton3:
+        pos: 707,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b915
+        text: "."
+    CustButton3:
+        pos: 754,377
+        background_color: (.37, .39, .45, 0.4)
+        id:b916
+        text: "."
+
+
+    CustButton3:
+        id:b015
+        pos: 1000,0
+        size: 15,415
+        background_color: (.37, .39, .45, 1)
+        
+    
+
+
+
+    CustToggleButton:
+        pos: 1,419
+        size: 90, 60
+        text: "START"
+        id:b001
+        on_press: sequencer.start()
+    CustButton3:
+        pos: 93,419
+        size: 90, 60
+        text: "STOP"
+        id:b002
+        font_size: 25
+        font_name:"Calibri"
+        background_color: .68,.68,.84,1
+        on_press: sequencer.stop()
+    CustToggleButton:
+        pos: 185,419
+        size: 60, 60
+        id:b003
+        text: "130"
+    CustToggleButton:
+        pos: 247,419
+        size: 95, 60
+        text: "8.0"
+        id:b004
+    CustToggleButton:
+        pos: 344,419
+        size: 150, 60
+        text: "FILES"
+        id:b005
+        on_press: sequencer.file()
+    CustToggleButton:
+        pos: 496,419
+        size: 150, 60
+        text: "SEQUENCE"
+        id:b006
+        on_press: sequencer.seqmode()
+    CustToggleButton:
+        pos: 648,419
+        size: 150, 60
+        text: "MENU"
+        id:b007
+        on_press: sequencer.menu()
+
+    CustButton3:
+        id:b010
+        pos: 1000,0
+        size: 1000,419
+        background_color: 0,0,0,0
+        on_press: sequencer.closemenus()
+
+
+    CustButton3:
+        pos: 648,900
+        size: 150,60
+        text: "SONG"
+        id:b008
+        font_size: 25
+        font_name:"Calibri"
+        background_color: .68,.68,.84,1
+
+    CustButton3:
+        pos: 648,900
+        size: 150,60
+        text: "PARAM"
+        id:b009
+        font_size: 25
+        font_name:"Calibri"
+        background_color: .68,.68,.84,1
+
+
+    CustButton3:
+        pos: 344,900
+        size: 150,60
+        text: "PAD"
+        id:b011
+        font_size: 25
+        font_name:"Calibri"
+        background_color: .68,.68,.84,1
+
+    CustButton3:
+        pos: 344,900
+        size: 150,60
+        text: "RANDOM"
+        id:b012
+        font_size: 25
+        font_name:"Calibri"
+        background_color: .68,.68,.84,1
+
+    CustButton3:
+        pos: 496,900
+        size: 150,60
+        text: "SAVE"
+        id:b013
+        font_size: 25
+        font_name:"Calibri"
+        background_color: .68,.68,.84,1
+
+    CustButton3:
+        pos: 496,900
+        size: 150,60
+        text: "LOAD"
+        id:b014
+        font_size: 25
+        font_name:"Calibri"
+        background_color: .68,.68,.84,1
+
+
+    
+
+        
