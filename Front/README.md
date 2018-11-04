@@ -13,7 +13,17 @@ Functionalities: [WATCH](https://www.facebook.com/CircleFade/videos/205455464152
 
 
 
-![alt text](https://github.com/max-circlefade/CF1/blob/master/Front/Piano%20Roll.png)
+![alt text](https://github.com/max-circlefade/CF1/blob/master/Front/Pics/Piano%20Roll.png)
 
+
+
+
+![alt text](https://github.com/max-circlefade/CF1/blob/master/Front/Pics/Param%20Screen.png)
+
+
+
+
+
+![alt text](https://github.com/max-circlefade/CF1/blob/master/Front/Pics/Song%20Mode.png)
 
 
