@@ -1,10 +1,14 @@
+import os
+os.environ['KIVY_GL_BACKEND']='gl'
 import kivy
 import time
  
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
+from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen,NoTransition
 from kivy.properties import ObjectProperty
+from kivy.uix.togglebutton import ToggleButton
 from kivy.config import Config
 from kivy.uix.button import Button
 from kivy.clock import Clock
@@ -14,6 +18,8 @@ import json
 from pprint import pprint
 from kivy.uix.tabbedpanel import TabbedPanel
 import threading
+import rtmidi
+import mido
 
 
 
@@ -74,7 +80,6 @@ class ParamScreen(Screen):
     def midichannelselect(self):
         self.b5017.pos=310,305
         self.b5000.pos=138,31
-
         self.b5001.pos=139,236
         self.b5005.pos=139,168
         self.b5009.pos=139,100
@@ -91,7 +96,6 @@ class ParamScreen(Screen):
         self.b5008.pos=529,168
         self.b5012.pos=529,100
         self.b5016.pos=529,32
-
         self.b3005.pos=0,0
 
 
@@ -305,29 +309,45 @@ class SongScreen(Screen):
         self.b100.state="normal"
 
     def start(self):
+        global nextcall
+        global playing
         if self.b001.state=="down":
             self.b001.text="PAUSE"
-            self.SeqScreen=SeqScreen()
-            global nextcall
             nextcall=time.time()
+            playing=1
+            self.Timing=Timing()
+            #self.startTimer()
+            self.Timing.Timer()
+            Clock.schedule_interval(self.movebar, 0.05)
             #Clock.schedule_interval(self.movebar, 0.01)
-            self.SeqScreen.startTimer()
+            #self.SeqScreen.startTimer()
         else:
             self.b001.text="START"
-            #Clock.unschedule(self.movebar)
+            playing=0
+            Clock.unschedule(self.movebar)
 
     def stop(self):
         global counter
+        global playing
+        global count
+        global loopstate
         self.b001.state="normal"
         self.b001.text="START"
         Clock.unschedule(self.movebar)
         counter=0
         position=0
         self.b015.pos=50,0
+        playing=0
+        count=0
+        loopstate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+
+
 
     def moveXrgh(self):
         global rangeXs
-        if rangeXs+16*(zoom)<=rangeXmax:
+        if (rangeXs+16)*4<=1021:
             self.b901.text=timerangeS[rangeXs+1]
             self.b902.text=timerangeS[rangeXs+2]
             self.b903.text=timerangeS[rangeXs+3]
@@ -345,7 +365,7 @@ class SongScreen(Screen):
             self.b915.text=timerangeS[rangeXs+15]
             self.b916.text=timerangeS[rangeXs+16]
             rangeXs=rangeXs+1
-            #print(rangeX)
+            print(rangeXs)
            
         else:
             pass
@@ -413,28 +433,32 @@ class SongScreen(Screen):
         self.loadseq()
 
 
+
     def loadseq(self):
         self.clear()
-        i=1
-        while i <= len(song):
-            Xc=song[i-1][0]-rangeXs
-            Yc=song[i-1][1]-rangeYs
-            #print(Xc)
-            if (Xc>=1 and Xc <= 16):
-                if (Yc >= 1 and Yc <=8):
-                    Xcp=int(Xc)
-                    #print(i*100)
-                    #print(Xcp)
-                    Ycp=-(int(Yc)-9)
-                    if Xcp<=9:
-                        b="b"+str(Ycp)+"0"+str(Xcp)
+        i=0
+        while i <16:
+            for elem in song[rangeXs+i]:
+                elemY=elem-rangeYs
+                elemX=i+1
+                #print(i)
+                #print(rangeXs)
+                print(elemX)
+                if elemY <=8:
+                    elemY=-(int(elemY)-9)
+                    if elemX<10:
+                        b="b"+str(elemY)+"0"+str(elemX)
                     else:
-                        b="b"+str(Ycp)+str(Xcp)
+                        b="b"+str(elemY)+str(elemX)
                     self.findButton(b)
                 else:
                     pass
             i+=1
         self.loopbar()
+        self.movebar()
+
+
+ 
 
     def findButton(self,button):
         for val in self.ids.items():
@@ -457,6 +481,16 @@ class SongScreen(Screen):
             self.b017.pos=1000,1000
         #self.gridbar()
 
+    def movebar(self, *args):
+        #print(counter)
+        countbar=count%loopsizeS
+        speed=47.5/64
+        position=int(50+round((countbar-rangeXs*64)*speed))
+        if position<50:
+            self.b015.pos=1000,0
+        else:
+            self.b015.pos=position,0
+
 
     def clearStep(self,button):
         button.state="normal"
@@ -471,19 +505,24 @@ class SongScreen(Screen):
 
     def monitor(self, button):
         global song
+        global buttonpouchedsong
         for key, val in self.ids.items():
             if val==button:
                 ID=key
         y=int(ID[1])
         yp=-(y-8)
         x=int(ID[-2:])
+        buttonpouchedsong=ID
         if button.state=="normal":
-            song.remove([(x-1)+rangeXs+1,yp+rangeYs+1])
+            song[x+rangeXs-1].remove(yp+rangeYs+1)
             print(song)
+            #Nmax+=-1
         else:
-            song.append([(x-1)+rangeXs+1,yp+rangeYs+1])
-            song=sorted(song, key=operator.itemgetter(0))
+            song[x+rangeXs-1].append(yp+rangeYs+1)	
+            song[x+rangeXs-1]=sorted(song[x+rangeXs-1])
             print(song)
+            
+            #print(song)
 
     def trackmenu(self,button):
         global trackselected
@@ -499,17 +538,51 @@ class SongScreen(Screen):
         self.b022.pos=301,243
         self.b010.pos=0,0
 
+
     def cleartrack(self):
-        toclear=[]
         for elem in song:
-            if elem[1]==trackselected:
-                toclear.append(elem)
-        i=0
-        if len(toclear)>0:
-            while i<=len(toclear)-1: 
-                song.remove(toclear[i])
-                i+=1
+            if trackselected in elem:
+                elem.remove(trackselected)
+            print(song)
         self.loadseq()
+
+
+    def on_enter(self):
+        if playing==1:
+            self.b001.state="down"
+            self.b001.text="PAUSE"
+            Clock.schedule_interval(self.movebar, 0.05)
+        else: 
+            self.b001.state="normal"
+            self.b001.text="START"
+            self.movebar()
+
+    def on_touch_move(self, touch):
+        global buttonpouchedsong
+        global sequencepool
+        if self.collide_point(*touch.pos):
+            #print(touch.pos)
+            x=touch.pos[0]-50
+            y=touch.pos[1]
+            bx=int(x/47+1)
+            by=int(y/47+1)
+            byc=8-by
+            #print(bx,by)
+            if (bx>int(buttonpouchedsong[-2:]) and by==int(buttonpouchedsong[1])):
+                if bx<=9:
+                    b="b"+str(by)+"0"+str(bx)
+                else:
+                    b="b"+str(by)+str(bx)
+                #print(b)
+                for val in self.ids.items():
+                   # print(val)
+                    if val[0]==b:
+                        #print("here") 
+                        if val[1].state=='normal':
+                            val[1].state='down'
+                            song[bx+rangeXs-1].append(byc+rangeYs+1) 
+                            song[bx+rangeXs-1]=sorted(song[bx+rangeXs-1])
+                            print(song)
 
 
  
@@ -575,7 +648,15 @@ class SeqScreen(Screen):
             self.b500.text=keyrange[rangeY+4][0]
             self.b600.text=keyrange[rangeY+5][0]
             self.b700.text=keyrange[rangeY+6][0]
-            self.b800.text=keyrange[rangeY+7][0]     
+            self.b800.text=keyrange[rangeY+7][0]  
+            if playing==1:
+                self.b001.state="down"
+                self.b001.text="PAUSE"
+                Clock.schedule_interval(self.movebar, 0.05)
+            else: 
+                self.b001.state="normal"
+                self.b001.text="START"
+                self.movebar()
         else:
             start = start +1
 
@@ -583,12 +664,16 @@ class SeqScreen(Screen):
 
     def monitor(self, button):
         global sequencepool
+        global buttonpouched
+        #print("monitored")
+
         for key, val in self.ids.items():
             if val==button:
                 ID=key
         y=int(ID[1])
         x=int(ID[-2:])
-
+        buttonpouched=ID
+        #print(buttonpouched)
         if button.state=="normal":
             sequencepool[trackselected-1].remove([(x-1)*zoom+rangeX+1,y+rangeY-1,1])
             #print(sequence)
@@ -639,7 +724,7 @@ class SeqScreen(Screen):
                         #print(rangeX)
                         self.zoomstep(val[1],timerange[btn])
                 else:
-                    rangeX=128
+                    rangeX=128*7
                     btn=(btx-1)*zoom+rangeX
                     print("resized")
                     #print(btn)
@@ -856,29 +941,30 @@ class SeqScreen(Screen):
     def loadseq(self):
         global sequencepool
         self.clear()
-        print(trackselected)
+        #print(trackselected)
         sequence=sequencepool[trackselected-1]
-        print(sequence)
+        #print(sequence)
         i=1
         while i <= len(sequence):
             Xc=sequence[i-1][0]-rangeX
             Yc=sequence[i-1][1]-rangeY+1
-            print(Xc)
+            #print(Xc)
             if (Xc>=0 and Xc <= 16*zoom and (sequence[i-1][0]-1)%zoom ==0):
                 if (Yc >= 1 and Yc <=8):
                     Xcp=int(Xc/(zoom+0.0000000000001))+1
-                    print(i*100)
-                    print(Xcp)
+                    #print(i*100)
+                    #print(Xcp)
                     if Xcp<=9:
                         b="b"+str(Yc)+"0"+str(Xcp)
                     else:
                         b="b"+str(Yc)+str(Xcp)
-                    print(b)
+                    #print(b)
                     self.findButton(b)
                 else:
                     pass
             i+=1
         self.loopbar()
+        self.movebar()
 
     def menu(self):
         if self.b007.state=="down":
@@ -946,80 +1032,56 @@ class SeqScreen(Screen):
 
     def start(self):
         global nextcall
+        global playing
         if self.b001.state=="down":
+            playing=1
             self.b001.text="PAUSE"
             nextcall=time.time()
             self.Timing=Timing()
             #self.startTimer()
             self.Timing.Timer()
-            #Clock.schedule_interval(self.movebar, 0.0125)
+            
+            Clock.schedule_interval(self.movebar, 0.05)
             
         else:
             self.b001.text="START"
+            playing=0
             Clock.unschedule(self.movebar)
 
     def stop(self):
         global counter
+        global count
+        global playing
+        global loopstate
         self.b001.state="normal"
         self.b001.text="START"
         Clock.unschedule(self.movebar)
         counter=0
         position=0
         self.b015.pos=50,0
+        playing=0
+        count=0
+        loopstate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-
-
-
-
-    def myPeriodicFunction(self):
-        print '{0:.16f}'.format(time.time())
-        global counter
-        global stopsignal
-        counter = counter +1
-        bpm=120
-        nbpulse=bpm/60*100
-        pulse=Decimal(750)/Decimal(nbpulse)
-        position=int(50+counter*pulse)
-        if position>800:
-            position=50
-            counter=1
-        print("here")
-        self.b015.pos=position,0
-        
-
-    def startTimer(self):
-        global nextcall
-        global count
-        nextcall = nextcall+interval
-        threading.Timer(nextcall - time.time(), self.startTimer).start()
-        self.myPeriodicFunction()
-        count+=1
-        print(count)
-        
-        
-        
-        
-        
+       
 
     def movebar(self, *args):
         #print(counter)
-        global counter2
-        global stopsignal2
-        counter2 = counter2 +1
-        bpm=120
-        nbpulse=bpm/60*100
-        pulse=Decimal(750)/Decimal(nbpulse)
-        position=int(50+counter2*pulse)
-        if position>800:
-            position=50
-            counter2=1
-        self.b015.pos=position,0
+        countbar=count%loopsize[trackselected-1]
+        speed=47.5/zoom
+        position=int(50+round((countbar-rangeX)*speed))
+        if position<50:
+            self.b015.pos=1000,0
+        else:
+            self.b015.pos=position,0
 
 
     def loopbar(self):
         global loopsize
-        loopbar_pos=loopsize*16
-        print(rangeX)
+        loopbar_pos=loopsize[trackselected-1]
+        #print(loopsize[trackselected])
+        #print(rangeX)
         if loopbar_pos<=rangeX+16*zoom:
             if 48+(loopbar_pos-rangeX)/zoom*47>=5:
                 self.b017.pos=48+(loopbar_pos-rangeX)/zoom*47,0
@@ -1030,7 +1092,7 @@ class SeqScreen(Screen):
         self.gridbar()
         
     def gridbar(self):
-        print(rangeX)
+        #print(rangeX)
         if (rangeX-3*zoom)%(4*zoom)==0:
             self.ids.b018.pos = 94,0
         if (rangeX-2*zoom)%(4*zoom)==0:
@@ -1039,6 +1101,65 @@ class SeqScreen(Screen):
             self.ids.b018.pos = 188,0
         if rangeX%(4*zoom)==0:
             self.ids.b018.pos = 235,0
+
+    def on_touch_move(self, touch):
+        global buttonpouched
+        global sequencepool
+        if self.collide_point(*touch.pos):
+            #print(touch.pos)
+            x=touch.pos[0]-50
+            y=touch.pos[1]
+            bx=int(x/47+1)
+            by=int(y/47+1)
+            #print(bx,by)
+            if (bx>int(buttonpouched[-2:]) and by==int(buttonpouched[1])):
+                if bx<=9:
+                    b="b"+str(by)+"0"+str(bx)
+                else:
+                    b="b"+str(by)+str(bx)
+                #print(b)
+                for val in self.ids.items():
+                   # print(val)
+                    if val[0]==b:
+                        #print("here") 
+                        if val[1].state=='normal':
+                            val[1].state='down'
+                            #print(val[1].background_color)
+                            #val[1].background_color=[1, 0.7, 0, 1]
+                            sequencepool[trackselected-1].append([(bx-1)*zoom+rangeX+1,by+rangeY-1,1])
+                            sequencepool[trackselected-1]=sorted(sequencepool[trackselected-1], key=operator.itemgetter(0))
+                            print(sequencepool)
+                            
+
+
+    def on_touch_up(self,touch):
+        global buttonpouched
+        global sequencepool
+        if self.collide_point(*touch.pos):
+            #print(touch.pos)
+            x=touch.pos[0]-50
+            y=touch.pos[1]
+            bx=int(x/47+1)
+            by=int(y/47+1)
+            #print(bx,by)
+            if (bx>int(buttonpouched[-2:]) and by==int(buttonpouched[1])):
+                if bx<=9:
+                    b="b"+str(by)+"0"+str(bx)
+                else:
+                    b="b"+str(by)+str(bx)
+                #print(b)
+                for val in self.ids.items():
+                   # print(val)
+                    if val[0]==b:
+                        #sequencepool[trackselected-1].append([(bx-1)*zoom+rangeX+1,by+rangeY-1,2])
+                        #sequencepool[trackselected-1]=sorted(sequencepool[trackselected-1], key=operator.itemgetter(0))
+                        #print(sequencepool)
+                        print("released")
+        
+
+    
+
+
 
 
 ##############################################################################################
@@ -1084,44 +1205,74 @@ class Timing():
         global nextcall
         global count
         global loopstate
+        global Nmax
+        global n
         nextcall = nextcall+interval
-        threading.Timer(nextcall - time.time(), self.Timer).start()
+
+        th=threading.Timer(nextcall - time.time(), self.Timer)
         print(nextcall-time.time())
         self.MIDIsend()
-        count+=1
-        if count > 100:
+
+        if playing==1:
+            th.start()
+            count+=1
+        
+        if count > 2000:
             count=0
+            loopstate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
         print(count)
 
 
-    def MIDIsends(self):
-        n=0
-        while n<15:
-            self.MIDIsend(n)
-            n+=1
-
 
     def MIDIsend(self):
-        global i
-        global loopstate
-        n=0
-        while n<7:
 
+        global loopstate
+        currentstep=count/(16*4)
+        i=0
+        while i<len(song[currentstep]):
+            n=song[currentstep][i]-1
+            #n is current track
+            if count%loopsize[n]==0:
+                loopstate[n]=0
+            #print(loopstate)
             if loopstate[n] <= len(sequencepool[n])-1:
                 #print(i)
-                while sequencepool[n][loopstate[n]][0]==count:
-                    print "send" , n
+                while sequencepool[n][loopstate[n]][0]==count%loopsize[n]:
+                    #print "send" , sequencepool[n][loopstate[n]][1] ,"channel" , n+1
+                    if sequencepool[n][loopstate[n]][2]==1:
+                        print "send" , sequencepool[n][loopstate[n]][1] ,"channel" , n+1
+                        if n < 15:
+                            channel=n
+                        else:
+                            channel=1
+                        msg=mido.Message('note_on', note=sequencepool[n][loopstate[n]][1], channel=channel)
+                        port.send(msg)
+                    else:
+                        print "stop" , sequencepool[n][loopstate[n]][1] ,"channel" , n+1
+
                     if loopstate[n]==len(sequencepool[n])-1:
-                        print("seq over")
+                        #print("seq over")
                         loopstate[n]=0
                         break
                     else:
                         loopstate[n]+=1
+
+                    
             else:
-                #print("No seq")
                 pass
-            n+=1
-            #print(loopstate)
+                print("pass")
+                #print(loopstate)
+            i+=1
+
+            
+    #def MIDImessages(self):
+
+        
+            
+
+            
             
 
 
@@ -1154,21 +1305,21 @@ class SequencerApp(App):
         sm = Manager(transition=NoTransition())
         return sm
 
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
 
 
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
-##############################################################################################
 
 
 #Data
@@ -1197,7 +1348,67 @@ timerange=["1","","","",".","","","",".","","","",".","","","",
 "13","","","",".","","","",".","","","",".","","","",
 "14","","","",".","","","",".","","","",".","","","",
 "15","","","",".","","","",".","","","",".","","","",
-"16","","","",".","","","",".","","","",".","","",""
+"16","","","",".","","","",".","","","",".","","","",
+"17","","","",".","","","",".","","","",".","","","",
+"18","","","",".","","","",".","","","",".","","","",
+"19","","","",".","","","",".","","","",".","","","",
+"20","","","",".","","","",".","","","",".","","","",
+"21","","","",".","","","",".","","","",".","","","",
+"22","","","",".","","","",".","","","",".","","","",
+"23","","","",".","","","",".","","","",".","","","",
+"24","","","",".","","","",".","","","",".","","","",
+"25","","","",".","","","",".","","","",".","","","",
+"26","","","",".","","","",".","","","",".","","","",
+"27","","","",".","","","",".","","","",".","","","",
+"28","","","",".","","","",".","","","",".","","","",
+"29","","","",".","","","",".","","","",".","","","",
+"30","","","",".","","","",".","","","",".","","","",
+"31","","","",".","","","",".","","","",".","","","",
+"32","","","",".","","","",".","","","",".","","","",
+"33","","","",".","","","",".","","","",".","","","",
+"34","","","",".","","","",".","","","",".","","","",
+"35","","","",".","","","",".","","","",".","","","",
+"36","","","",".","","","",".","","","",".","","","",
+"37","","","",".","","","",".","","","",".","","","",
+"38","","","",".","","","",".","","","",".","","","",
+"39","","","",".","","","",".","","","",".","","","",
+"40","","","",".","","","",".","","","",".","","","",
+"41","","","",".","","","",".","","","",".","","","",
+"42","","","",".","","","",".","","","",".","","","",
+"43","","","",".","","","",".","","","",".","","","",
+"44","","","",".","","","",".","","","",".","","","",
+"45","","","",".","","","",".","","","",".","","","",
+"46","","","",".","","","",".","","","",".","","","",
+"47","","","",".","","","",".","","","",".","","","",
+"48","","","",".","","","",".","","","",".","","","",
+"49","","","",".","","","",".","","","",".","","","",
+"50","","","",".","","","",".","","","",".","","","",
+"51","","","",".","","","",".","","","",".","","","",
+"52","","","",".","","","",".","","","",".","","","",
+"53","","","",".","","","",".","","","",".","","","",
+"54","","","",".","","","",".","","","",".","","","",
+"55","","","",".","","","",".","","","",".","","","",
+"56","","","",".","","","",".","","","",".","","","",
+"57","","","",".","","","",".","","","",".","","","",
+"58","","","",".","","","",".","","","",".","","","",
+"59","","","",".","","","",".","","","",".","","","",
+"60","","","",".","","","",".","","","",".","","","",
+"61","","","",".","","","",".","","","",".","","","",
+"62","","","",".","","","",".","","","",".","","","",
+"63","","","",".","","","",".","","","",".","","","",
+"64","","","",".","","","",".","","","",".","","","",
+"65","","","",".","","","",".","","","",".","","","",
+"66","","","",".","","","",".","","","",".","","","",
+"67","","","",".","","","",".","","","",".","","","",
+"68","","","",".","","","",".","","","",".","","","",
+"69","","","",".","","","",".","","","",".","","","",
+"70","","","",".","","","",".","","","",".","","","",
+"71","","","",".","","","",".","","","",".","","","",
+"72","","","",".","","","",".","","","",".","","","",
+"73","","","",".","","","",".","","","",".","","","",
+"74","","","",".","","","",".","","","",".","","","",
+"75","","","",".","","","",".","","","",".","","","",
+"76","","","",".","","","",".","","","",".","","","",
 ]
 
 keyrangeS=["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20",
@@ -1209,62 +1420,78 @@ keyrangeS=["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16
 
 timerangeS=["1","5","9","13","17","21","25","29","33","37","41","45","49","53","57","61",
 "65","69","73","77","81","85","89","93","97","101","105","109","113","117","121","125",
-"3","","","",".","","","",".","","","",".","","","",
-"4","","","",".","","","",".","","","",".","","","",
-"5","","","",".","","","",".","","","",".","","","",
-"6","","","",".","","","",".","","","",".","","","",
-"7","","","",".","","","",".","","","",".","","","",
-"8","","","",".","","","",".","","","",".","","","",
-"9","","","",".","","","",".","","","",".","","","",
-"10","","","",".","","","",".","","","",".","","","",
-"11","","","",".","","","",".","","","",".","","","",
-"12","","","",".","","","",".","","","",".","","","",
-"13","","","",".","","","",".","","","",".","","","",
-"14","","","",".","","","",".","","","",".","","","",
-"15","","","",".","","","",".","","","",".","","","",
-"16","","","",".","","","",".","","","",".","","",""
-]
+"129","133","137","141","145","149","153","157","161","165","169","173","177","181","185","189",
+"193","197","201","205","209","213","217","221","225","229","233","237","241","245","249","253",
+"257","261","265","269","273","277","281","285","289","293","297","301","305","309","313","317",
+"321","325","329","333","337","341","345","349","353","357","361","365","369","373","377","381",
+"385","389","393","397","401","405","409","413","417","421","425","429","433","437","441","445",
+"449","453","457","461","465","469","473","477","481","485","489","493","497","501","505","509",
+"513","517","521","525","529","533","537","541","545","549","553","557","561","565","569","573",
+"577","581","585","589","593","597","601","605","609","613","617","621","625","629","633","637",
+"641","645","649","653","657","661","665","669","673","677","681","685","689","693","697","701",
+"705","709","713","717","721","725","729","733","737","741","745","749","753","757","761","765",
+"769","773","777","781","785","789","793","797","801","805","809","813","817","821","825","829",
+"833","837","841","845","849","853","857","861","865","869","873","877","881","885","889","893",
+"897","901","905","909","913","917","921","925","929","933","937","941","945","949","953","957",
+"961","965","969","973","977","981","985","989","993","997","1001","1005","1009","1013","1017","1021"]
 
 
 sequence=[]
-sequencepool=[[[12,41,1],[17,42,1],[25,42,1],[25,40,1],[25,45,1],[29,42,1],[29,45,1],[29,48,1]],[],[],[],[],[[5,39,1],[13,40,1]],[],[],[],[],
+sequencepool=[[[12,41,1],[17,42,1],[25,42,1],[25,40,1],[26,45,1],[29,42,1],[29,45,1],[70,48,1]],[[17,42,1]],[[12,41,1],[17,42,1],[70,42,1]],[[17,42,1]],[[17,42,1]],[[5,39,1],[13,40,1]],[],[],[],[[17,42,1]],
+[],[],[],[],[],[],[],[],[],[],
+[],[],[],[],[],[],[],[],[],[],
+[],[],[],[],[],[],[],[],[],[],
+[],[],[],[],[],[],[],[],[],[],
 [],[],[],[],[],[],[],[],[],[],
 [],[],[],[],[],[],[],[],[],[],
 [],[],[],[],[],[],[],[],[],[],
 [],[],[],[],[],[],[],[],[],[],
 [],[],[],[],[],[],[],[],[],[]
 ]
-#[12,41,1],[17,42,1],[25,42,1],[33,44,1]]
-#[2,36,1],[1,37,1],[4,38,1],[5,39,1],[13,40,1]
 #[Step number,Note number, Note length]
-song=[ [1,1], [2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],[10,1],[11,1],[12,1],[13,1],[14,1],[15,1],[16,1] ]
-#song=[[1,3,4,5,8,9],[2,3,6,7],[],[],[],[2,3,4],[],[],[],[],[]]
+#song=[[1,2,3,5,6,10],[1,5],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
+#song=[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
+song=[[1],[1],[1],[1],[1],[1],[1],[1],[1],[1],[1],[1],[1],[1],[1],[1],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
 
 rangeX=0
 rangeXs=0
 zoom=4
-rangeXmax=16*16-1
+rangeXmax=64*16-1
 rangeYs=0
 rangeY=36 #C0=0, 8 octaves
 q=16
 start=0
+bom=120
 trackselected=1
-loopsize=6
-loopsizeS=64
+#loopsize=6
+loopsizeS=3000
 counter=0
 counter2=0
 trackselectedparam=1
 delta=0
-interval = 0.0125
+interval = 0.03125
 count=0
-i=0
-loopstate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+loopstate=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+print(loopstate)
+loopsize=[64,64,64,64,64,32,64,64,64,64,64,64,64,64,64,32,64,64,64,64,64,64,64,64,64,32,64,64,64,64,
+64,64,64,64,64,32,64,64,64,64,64,64,64,64,64,32,64,64,64,64,64,64,64,64,64,32,64,64,64,64,
+64,64,64,64,64,32,64,64,64,64,64,64,64,64,64,32,64,64,64,64,64,64,64,64,64,32,64,64,64,64,
+64,64,64,64,64,32,64,64,64,64]
+playing=0
+buttonpouched="b000"
+buttonpouchedsong="b000"
 with open('param.json') as f:
     paramcf1 = json.load(f)
-#pprint(data)
-#print(data)
-print(paramcf1["midi-map"][0]["port"])
-print(len(sequencepool[0]))
+
+midiout = rtmidi.MidiOut()
+available_ports = midiout.get_ports()
+print(available_ports)
+port = available_ports[0]
+port = mido.open_output(port)
 seq= SequencerApp()
 seq.run()
 
