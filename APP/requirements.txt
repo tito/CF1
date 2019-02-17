@@ -1,0 +1,7 @@
+Cython
+kivy
+Pillow
+rtmidi
+mido
+serial
+numpy
