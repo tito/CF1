@@ -29,10 +29,13 @@ register('default_font', 'Icons.ttf',
 Config.set('graphics', 'width', '800')
 Config.set('graphics', 'height', '480')
 
+rpi = 0
 if platform.system()=='Linux':
-    rpi=1
-else:
-    rpi=0
+    try:
+        from RPi import GPIO
+        rpi = 1
+    except:
+        pass
 
 print(("rpi detected:",rpi))
 if rpi==1:
@@ -830,7 +833,7 @@ class SongScreen(Screen):
         else:
             self.b001.state="normal"
             self.b001.text="%s"%(icon('icon-play', 22))
-        self.movebarenter()
+            self.movebarenter()
 
 
     def menu(self):
@@ -2172,22 +2175,22 @@ class SaveSeq(Screen):
         global rangeFile
         if rangeFile>0:
             rangeFile-=1
-        self.b5001.text=str(rangeFile*4+1)
-        self.b5002.text=str(rangeFile*4+2)
-        self.b5003.text=str(rangeFile*4+3)
-        self.b5004.text=str(rangeFile*4+4)
-        self.b5005.text=str(rangeFile*4+5)
-        self.b5006.text=str(rangeFile*4+6)
-        self.b5007.text=str(rangeFile*4+7)
-        self.b5008.text=str(rangeFile*4+8)
-        self.b5009.text=str(rangeFile*4+9)
-        self.b5010.text=str(rangeFile*4+10)
-        self.b5011.text=str(rangeFile*4+11)
-        self.b5012.text=str(rangeFile*4+12)
-        self.b5013.text=str(rangeFile*4+13)
-        self.b5014.text=str(rangeFile*4+14)
-        self.b5015.text=str(rangeFile*4+15)
-        self.b5016.text=str(rangeFile*4+16)
+            self.b5001.text=str(rangeFile*4+1)
+            self.b5002.text=str(rangeFile*4+2)
+            self.b5003.text=str(rangeFile*4+3)
+            self.b5004.text=str(rangeFile*4+4)
+            self.b5005.text=str(rangeFile*4+5)
+            self.b5006.text=str(rangeFile*4+6)
+            self.b5007.text=str(rangeFile*4+7)
+            self.b5008.text=str(rangeFile*4+8)
+            self.b5009.text=str(rangeFile*4+9)
+            self.b5010.text=str(rangeFile*4+10)
+            self.b5011.text=str(rangeFile*4+11)
+            self.b5012.text=str(rangeFile*4+12)
+            self.b5013.text=str(rangeFile*4+13)
+            self.b5014.text=str(rangeFile*4+14)
+            self.b5015.text=str(rangeFile*4+15)
+            self.b5016.text=str(rangeFile*4+16)
 
 
 
@@ -2221,13 +2224,13 @@ class LoadSeq(Screen):
         if self.b001.state=="down":
             with open('savedseq.json') as s:
                 saved = json.load(s)
-            print((saved["savedseq"][chosen+rangeFile*4-1]["sequence"]))
-            sequencepool2[trackselected-1]=saved["savedseq"][chosen+rangeFile*4-1]["sequence"]
-            q1.put(sequencepool2)
+                print((saved["savedseq"][chosen+rangeFile*4-1]["sequence"]))
+                sequencepool2[trackselected-1]=saved["savedseq"][chosen+rangeFile*4-1]["sequence"]
+                q1.put(sequencepool2)
         else:
             from midiconvert import MIDIconvert
             #sequencepool2[trackselected-1]=MIDIconvert('test4.mid')
-            self.convert()
+        self.convert()
 
 
 
@@ -2242,43 +2245,43 @@ class LoadSeq(Screen):
         global rangeFile
         if rangeFile<21:
             rangeFile+=1
-        self.b5001.text=str(rangeFile*4+1)
-        self.b5002.text=str(rangeFile*4+2)
-        self.b5003.text=str(rangeFile*4+3)
-        self.b5004.text=str(rangeFile*4+4)
-        self.b5005.text=str(rangeFile*4+5)
-        self.b5006.text=str(rangeFile*4+6)
-        self.b5007.text=str(rangeFile*4+7)
-        self.b5008.text=str(rangeFile*4+8)
-        self.b5009.text=str(rangeFile*4+9)
-        self.b5010.text=str(rangeFile*4+10)
-        self.b5011.text=str(rangeFile*4+11)
-        self.b5012.text=str(rangeFile*4+12)
-        self.b5013.text=str(rangeFile*4+13)
-        self.b5014.text=str(rangeFile*4+14)
-        self.b5015.text=str(rangeFile*4+15)
-        self.b5016.text=str(rangeFile*4+16)
+            self.b5001.text=str(rangeFile*4+1)
+            self.b5002.text=str(rangeFile*4+2)
+            self.b5003.text=str(rangeFile*4+3)
+            self.b5004.text=str(rangeFile*4+4)
+            self.b5005.text=str(rangeFile*4+5)
+            self.b5006.text=str(rangeFile*4+6)
+            self.b5007.text=str(rangeFile*4+7)
+            self.b5008.text=str(rangeFile*4+8)
+            self.b5009.text=str(rangeFile*4+9)
+            self.b5010.text=str(rangeFile*4+10)
+            self.b5011.text=str(rangeFile*4+11)
+            self.b5012.text=str(rangeFile*4+12)
+            self.b5013.text=str(rangeFile*4+13)
+            self.b5014.text=str(rangeFile*4+14)
+            self.b5015.text=str(rangeFile*4+15)
+            self.b5016.text=str(rangeFile*4+16)
 
     def dw(self):
         global rangeFile
         if rangeFile>0:
             rangeFile-=1
-        self.b5001.text=str(rangeFile*4+1)
-        self.b5002.text=str(rangeFile*4+2)
-        self.b5003.text=str(rangeFile*4+3)
-        self.b5004.text=str(rangeFile*4+4)
-        self.b5005.text=str(rangeFile*4+5)
-        self.b5006.text=str(rangeFile*4+6)
-        self.b5007.text=str(rangeFile*4+7)
-        self.b5008.text=str(rangeFile*4+8)
-        self.b5009.text=str(rangeFile*4+9)
-        self.b5010.text=str(rangeFile*4+10)
-        self.b5011.text=str(rangeFile*4+11)
-        self.b5012.text=str(rangeFile*4+12)
-        self.b5013.text=str(rangeFile*4+13)
-        self.b5014.text=str(rangeFile*4+14)
-        self.b5015.text=str(rangeFile*4+15)
-        self.b5016.text=str(rangeFile*4+16)
+            self.b5001.text=str(rangeFile*4+1)
+            self.b5002.text=str(rangeFile*4+2)
+            self.b5003.text=str(rangeFile*4+3)
+            self.b5004.text=str(rangeFile*4+4)
+            self.b5005.text=str(rangeFile*4+5)
+            self.b5006.text=str(rangeFile*4+6)
+            self.b5007.text=str(rangeFile*4+7)
+            self.b5008.text=str(rangeFile*4+8)
+            self.b5009.text=str(rangeFile*4+9)
+            self.b5010.text=str(rangeFile*4+10)
+            self.b5011.text=str(rangeFile*4+11)
+            self.b5012.text=str(rangeFile*4+12)
+            self.b5013.text=str(rangeFile*4+13)
+            self.b5014.text=str(rangeFile*4+14)
+            self.b5015.text=str(rangeFile*4+15)
+            self.b5016.text=str(rangeFile*4+16)
 
 
 
@@ -2398,19 +2401,19 @@ class Timing():
         for n,track in enumerate(sequencepool3): #n is track number
             pos=count%loopsize[n]-1
             if pos==0:
-                if n+1 in song[count/(16*4)-1]:
+                if n+1 in song[int(count/(16*4))-1]:
                     print(("All Notes Off on track: ",n+1))
                     if Sendinfo[n][6]==1:
                         self.noteoffUSB(n,Sendinfo,port)
                     if Sendinfo[n][6]==2:
                         self.noteoffMIDI(n,Sendinfo)
-                if n+1 in song[v3.value/(16*4)-1] and count==1:
+                if n+1 in song[int(v3.value/(16*4))-1] and count==1:
                     print(("All Notes Off on track (looped): ",n+1))
                     if Sendinfo[n][6]==1:
                         self.noteoffUSB(n,Sendinfo,port)
                     if Sendinfo[n][6]==2:
                         self.noteoffMIDI(n,Sendinfo)
-            if n+1 in song[count/(16*4)]:
+            if n+1 in song[int(count/(16*4))]:
                 if len(track[pos])>0:
                     for elem in track[pos]:
                         print(("Sending",elem))
@@ -2608,7 +2611,7 @@ class Listen():
                         w2.value=0
                     else:
                         w2.value=1
-                    swLastState=swstate
+            swLastState=swstate
         else:
             pass
 
