@@ -1,0 +1,9 @@
+# Cython
+# kivy
+# Pillow
+rtmidi
+mido
+serial
+numpy
+smbus-cffi
+RPi.GPIO
