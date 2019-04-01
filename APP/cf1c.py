@@ -2502,7 +2502,7 @@ class SaveSeq(Screen):
 			if wheel==2:
 				wheel=0
 				self.dw()
-		self.usbcheck()
+		if rpi==1:self.usbcheck()
 
 	def usbcheck(self):
 		for files in os.walk('/media/pi'):
@@ -2666,7 +2666,7 @@ class LoadSeq(Screen):
 			if wheel==2:
 				wheel=0
 				self.dw()
-		self.usbcheck()
+		if rpi==1:self.usbcheck()
 
 
 	def leaving(self):
