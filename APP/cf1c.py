@@ -1,5 +1,8 @@
 import os
 os.environ['KIVY_GL_BACKEND']='gl'
+
+# CFM1 APP version 1.0
+
 import kivy
 import platform
 import time
@@ -17,12 +20,13 @@ from decimal import *
 import operator
 import json
 import multiprocessing
-import rtmidi
 import mido
 import serial
+import rtmidi
 import numpy
 from iconfonts import *
 from os.path import join, dirname
+
 
 register('default_font', 'Icons.ttf',
 			 join(dirname(__file__), 'Icons.fontd'))
@@ -43,9 +47,9 @@ if rpi==1:
 	from RPi import GPIO
 	ser=serial.Serial('/dev/ttyAMA0', 38400)
 	bus = smbus.SMBus(1)
-	clk = 16
+	clk = 21
 	dt = 20
-	sw = 21
+	sw = 16
 	pwm = 13
 	jackstart = 12
 	GPIO.setmode(GPIO.BCM)
@@ -90,6 +94,13 @@ class ParamScreen(Screen):
 		self.CVupdate()
 		self.convert()
 		self.syncupdate()
+		self.versionupdate()
+		self.b1000005.pos=320,1170
+		Clock.schedule_interval(self.listening, 0.002)
+		w1.value=0		
+
+	def versionupdate(self):
+		self.b1000004.text='CFM1 Version '+str(version)
 
 	def midiupdate(self):
 		self.b1001.text=paramcf1["midi-map"][rangeMidi]["port"]
@@ -130,6 +141,11 @@ class ParamScreen(Screen):
 			self.b100004.text="24"
 		else:
 			self.b100004.text="48"
+		if paramcf1["sync"][4]["USBstate"]=="in":
+			print('here')
+			self.b100005.text="In"
+		else:
+			self.b100005.text="Out"		
 
 
 
@@ -368,8 +384,12 @@ class ParamScreen(Screen):
 				paramcf1["midi-map"][trackselectedparam-1]["port"] = "USB"
 			if int(new)==2:
 				paramcf1["midi-map"][trackselectedparam-1]["port"] = "DIN"
-			with open("param.json", "w") as jsonFile:
-				json.dump(paramcf1, jsonFile)
+			if rpi==1:
+				with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)
+			else:
+				with open("param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)				
 			self.midiupdate()
 			self.convert()
 
@@ -381,8 +401,12 @@ class ParamScreen(Screen):
 			if int(new)==2:
 				paramcf1["CV-map"][CVselectedparam-1]["Voltage"] = "[ -5V ; 5V ]"
 				#CVassign[CVselectedparam-1][2]=0
-			with open("param.json", "w") as jsonFile:
-				json.dump(paramcf1, jsonFile)
+			if rpi==1:
+				with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)
+			else:
+				with open("param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)				
 			self.CVupdate()
 			self.convert()
 			#Sendinfo[CVassign[trackselectedparam-1][1]-1][5]=CVassign[CVselectedparam-1][2]
@@ -420,8 +444,12 @@ class ParamScreen(Screen):
 				#Sendinfo[CVassign[trackselectedparam-1][1]-1][2]=0
 				#Sendinfo[CVassign[trackselectedparam-1][1]-1][3]=CVinfo[CVassign[trackselectedparam-1][1]-1][0]
 				#Sendinfo[CVassign[trackselectedparam-1][1]-1][4]=CVinfo[CVassign[trackselectedparam-1][1]-1][1]
-			with open("param.json", "w") as jsonFile:
-				json.dump(paramcf1, jsonFile)
+			if rpi==1:
+				with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)
+			else:
+				with open("param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)				
 			self.CVupdate()
 			self.convert()
 			print(Sendinfo)
@@ -444,16 +472,24 @@ class ParamScreen(Screen):
 					paramcf1["CV-map"][i]["Track"] = "NONE"
 					break
 				i+=1
-			with open("param.json", "w") as jsonFile:
-				json.dump(paramcf1, jsonFile)
+			if rpi==1:
+				with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)
+			else:
+				with open("param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)				
 			self.CVupdate()
 			self.convert()
 
 
 		if self.b5017.text=="MIDI CHANNEL:":
 			paramcf1["midi-map"][trackselectedparam-1]["channel"] = str(new)
-			with open("param.json", "w") as jsonFile:
-				json.dump(paramcf1, jsonFile)
+			if rpi==1:
+				with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)
+			else:
+				with open("param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)
 			self.midiupdate()
 			self.convert()
 			print(Sendinfo)
@@ -462,8 +498,12 @@ class ParamScreen(Screen):
 			table=["/48","/24","/16","/8","/4","/2","1","2","4","8","16","24","32","48","64","96"]
 			print((str(table[new-1])))
 			paramcf1["sync"][2]["ppq"] = str(table[new-1])
-			with open("param.json", "w") as jsonFile:
-				json.dump(paramcf1, jsonFile)
+			if rpi==1:
+				with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)
+			else:
+				with open("param.json", "w") as jsonFile:
+					json.dump(paramcf1, jsonFile)				
 			self.syncupdate()
 			self.convertsync()
 
@@ -521,6 +561,7 @@ class ParamScreen(Screen):
 		if start==1:
 			q4.put(Sendinfo)
 			r1.put(Sendinfo)
+			s1.put(Sendinfo)			
 		return Sendinfo
 
 	def convertsync(self):
@@ -543,50 +584,116 @@ class ParamScreen(Screen):
 			Syncinfo[3]=1
 		else:
 			Syncinfo[3]=2
-		print(Syncinfo)
+		if paramcf1['sync'][4]["USBstate"]=="in":
+			Syncinfo[4]=1
+		else:
+			Syncinfo[4]=0			
+		#print(Syncinfo)
 		if start==1:
 			q5.put(Syncinfo)
 			r3.put(Syncinfo)
+			s3.put(Syncinfo)					
 		return Syncinfo
 
 	def MIDIsync(self):
-		with open("param.json", "w") as jsonFile:
-			if self.b100001.text=='Off':
-				print ("on")
-				self.b100001.text='On'
-				paramcf1["sync"][0]["midi-din"] = "on"
-			else:
-				print("off")
-				self.b100001.text='Off'
-				paramcf1["sync"][0]["midi-din"] = "off"
-			json.dump(paramcf1, jsonFile)
+		if rpi==1:
+			with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+				if self.b100001.text=='Off':
+					print ("on")
+					self.b100001.text='On'
+					paramcf1["sync"][0]["midi-din"] = "on"
+				else:
+					print("off")
+					self.b100001.text='Off'
+					paramcf1["sync"][0]["midi-din"] = "off"
+				json.dump(paramcf1, jsonFile)
+		else:
+			with open("param.json", "w") as jsonFile:
+				if self.b100001.text=='Off':
+					print ("on")
+					self.b100001.text='On'
+					paramcf1["sync"][0]["midi-din"] = "on"
+				else:
+					print("off")
+					self.b100001.text='Off'
+					paramcf1["sync"][0]["midi-din"] = "off"
+				json.dump(paramcf1, jsonFile)			
 		self.convertsync()
 
 	def USBsync(self):
-		with open("param.json", "w") as jsonFile:
-			if self.b100002.text=='Off':
-				self.b100002.text='On'
-				print ("on")
-				paramcf1["sync"][1]["midi-usb"] = "on"
-			else:
-				print("off")
-				self.b100002.text='Off'
-				paramcf1["sync"][1]["midi-usb"] = "off"
-			json.dump(paramcf1, jsonFile)
+		if rpi==1:
+			with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+				if self.b100002.text=='Off':
+					self.b100002.text='On'
+					print ("on")
+					paramcf1["sync"][1]["midi-usb"] = "on"
+				else:
+					print("off")
+					self.b100002.text='Off'
+					paramcf1["sync"][1]["midi-usb"] = "off"
+				json.dump(paramcf1, jsonFile)
+		else:
+			with open("param.json", "w") as jsonFile:
+				if self.b100002.text=='Off':
+					self.b100002.text='On'
+					print ("on")
+					paramcf1["sync"][1]["midi-usb"] = "on"
+				else:
+					print("off")
+					self.b100002.text='Off'
+					paramcf1["sync"][1]["midi-usb"] = "off"
+				json.dump(paramcf1, jsonFile)			
 		self.convertsync()
 
 	def BPMmult(self):
-		with open("param.json", "w") as jsonFile:
-			if self.b100004.text=='24':
-				self.b100004.text='48'
-				print ("x2")
-				paramcf1["sync"][3]["BPMmult"] = "2"
-			else:
-				print("x1")
-				self.b100004.text='24'
-				paramcf1["sync"][3]["BPMmult"] = "1"
-			json.dump(paramcf1, jsonFile)
+		if rpi==1:
+			with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+				if self.b100004.text=='24':
+					self.b100004.text='48'
+					print ("x2")
+					paramcf1["sync"][3]["BPMmult"] = "2"
+				else:
+					print("x1")
+					self.b100004.text='24'
+					paramcf1["sync"][3]["BPMmult"] = "1"
+				json.dump(paramcf1, jsonFile)
+		else:
+			with open("param.json", "w") as jsonFile:
+				if self.b100004.text=='24':
+					self.b100004.text='48'
+					print ("x2")
+					paramcf1["sync"][3]["BPMmult"] = "2"
+				else:
+					print("x1")
+					self.b100004.text='24'
+					paramcf1["sync"][3]["BPMmult"] = "1"
+				json.dump(paramcf1, jsonFile)			
 		self.convertsync()
+
+	def USBstate(self):
+		if rpi==1:
+			with open("/home/pi/Desktop2/UIP/param.json", "w") as jsonFile:
+				if self.b100005.text=='In':
+					self.b100005.text='Out'
+					print ("out")
+					paramcf1["sync"][4]["USBstate"] = "out"
+				else:
+					print("in")
+					self.b100005.text='In'
+					paramcf1["sync"][4]["USBstate"] = "in"
+				json.dump(paramcf1, jsonFile)
+		else:
+			with open("param.json", "w") as jsonFile:
+				if self.b100005.text=='In':
+					self.b100005.text='Out'
+					print ("out")
+					paramcf1["sync"][4]["USBstate"] = "out"
+				else:
+					print("in")
+					self.b100005.text='In'
+					paramcf1["sync"][4]["USBstate"] = "in"
+				json.dump(paramcf1, jsonFile)			
+		self.convertsync()				
 
 	def closemenu(self):
 		self.b4000.pos=1328,1120
@@ -736,6 +843,7 @@ class ParamScreen(Screen):
 			self.lbl50.text = 'CV' + str(rangeCV + 4)+':'
 			self.lbl60.text = 'CV' + str(rangeCV + 5)+':'
 			rangeCV-= 1
+
 		else:
 			pass
 		self.VoltageHide()
@@ -791,8 +899,45 @@ class ParamScreen(Screen):
 		if rpi==1:
 			os.system("sudo poweroff")
 
+
 	def update(self):
-		print("update")
+		print("updating.........")
+		if rpi==1:
+			for files in os.walk('/media/pi'):
+				resulted=files
+				break
+			resulted=str(resulted[1])
+			resulted=resulted[:-2]
+			location=str(resulted[2:])
+			print(location)
+			if len(location)<1:
+				print('no usb stick detected')
+				self.b1000005.pos=320,170
+				self.b1000005.text='No USB stick detected'
+			else:
+				for root, dirs, files in os.walk("/media/pi/"+location):
+					if "CFM1update1.1.zip" in files:
+						print("Updating.. Do not power off")
+						self.b1000005.pos=320,170
+						self.b1000005.text="Updating.. Do not power off"
+						try:
+							os.system("cp /media/pi/"+location+"/CFM1update1.1.zip ~/Desktop2")
+							os.system("unzip ~/Desktop2/CFM1update1.1.zip -d ~/Desktop2")
+							from distutils.dir_util import copy_tree
+							try:
+								copy_tree("/home/pi/Desktop2/CFM1update1.1", "/home/pi/Desktop2/UIP")
+								os.system('rm /home/pi/Desktop2/CFM1update1.1.zip')
+								os.system('rm -rf /home/pi/Desktop2/CFM1update1.1')
+								os.system("sudo reboot")
+							except: print("copy tree error")
+						except:
+							print("error updating")						
+						break
+					else:
+						print("Update file not detected")
+						self.b1000005.pos=320,170
+						self.b1000005.text="Update file not detected"
+
 
 	def brightness(self,value):
 		command="sudo rpi-backlight -b"
@@ -800,6 +945,52 @@ class ParamScreen(Screen):
 		print((command + " " + brightness))
 		if rpi==1:
 			os.system(command + " " + brightness)
+
+	def close(self):
+		if rpi==1:
+			GPIO.cleanup()
+			print("cleaned")
+			#os.system("lxterminal")			
+			os.system('killall python')
+
+	def listening(self,*args):
+		global wheel
+		global buttonparam
+		encodervalue=w1.value
+		encoderpushed=w2.value
+		w1.value=0
+		if self.b000000001.current_tab.text=="MIDI":
+			buttonparam=0
+		elif self.b000000001.current_tab.text=="CV":
+			buttonparam=1
+		if buttonparam==0:
+			if encodervalue>0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.scrollDownMIDI()
+			elif encodervalue<0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.scrollUpMIDI()
+
+
+		if buttonparam==1:
+			if encodervalue>0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.scrollDownCV()
+			elif encodervalue<0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.scrollUpCV()
+
+	def leaving(self):
+		Clock.unschedule(self.listening)
+		print("unschedule param")
 
 
 ##############################################################################################
@@ -1148,6 +1339,7 @@ class SongScreen(Screen):
 				ID=key
 		trackselected=-(int(ID[1])-9)+rangeYs
 		r2.put(trackselected)
+		s2.put(trackselected)		
 		v5.value=trackselected
 		self.b019.pos=300,120
 		self.b020.pos=301,121
@@ -1289,6 +1481,20 @@ class SongScreen(Screen):
 			if encoderpushed==1:
 				seqbuttonmodesong=0
 				self.b004.state='normal'
+		global playing
+		if v6.value==1:
+			v6.value=2
+			playing=1
+			self.b001.text="%s"%(icon('icon-pause', 22))
+			self.b001.state='down'
+			Clock.schedule_interval(self.movebar, 0.002)
+		elif v6.value==0:
+			self.b001.text="%s"%(icon('icon-play', 22))
+			self.b001.state='normal'
+			playing=0
+			v6.value=2	
+			Clock.unschedule(self.movebar)	
+			self.b015.pos=50,0				
 
 
 ##############################################################################################
@@ -1424,11 +1630,11 @@ class SeqScreen(Screen):
 			j=0
 			for elem in sequencepool3[trackselected-1]:
 				if len(elem)>0:
+					if j > (xseq-1)*zoom+rangeX+1:
+						break					
 					for elem2 in elem:
 						if elem2[0]==yseq+rangeY-1 and elem2[1]==1:
 							result2=j
-					if j > (xseq-1)*zoom+rangeX+1:
-						break
 				j+=1
 			for elem in sequencepool3[trackselected-1][result2]:
 				if elem[0]==yseq+rangeY-1 and elem[1]==1:
@@ -1769,6 +1975,7 @@ class SeqScreen(Screen):
 			self.b014.pos= 344,900
 			self.b016.pos= 344,900
 			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
 			self.b006.state="normal"
 			self.b005.state="normal"
 			self.b010.pos= 0,0
@@ -1788,6 +1995,7 @@ class SeqScreen(Screen):
 			self.b014.pos= 344,900
 			self.b016.pos= 344,900
 			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
 			self.b007.state="normal"
 			self.b005.state="normal"
 			self.b010.pos= 0,0
@@ -1802,6 +2010,7 @@ class SeqScreen(Screen):
 			self.b014.pos= 344,301
 			self.b016.pos= 344,242
 			self.b020.pos= 344,183
+			self.b022.pos= 344,124			
 			self.b011.pos= 496,900
 			self.b012.pos= 496,900
 			self.b008.pos= 648,900
@@ -1814,7 +2023,18 @@ class SeqScreen(Screen):
 			self.b014.pos= 344,900
 			self.b016.pos= 344,900
 			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
 			self.b010.pos= 1000,0
+
+	def recordingbut(self):
+		global recordingON
+		if self.b022.text=='REC OFF':
+			self.b022.text='REC ON'
+			recordingON=1
+		else:
+			self.b022.text='REC OFF'
+			recordingON=0	
+		print(recordingON)		
 
 
 	def mode(self,num):
@@ -1874,9 +2094,7 @@ class SeqScreen(Screen):
 			self.b001.text="%s"%(icon('icon-play', 22))
 			playing=0
 			Clock.unschedule(self.movebar)
-			v1.value=2
-
-
+			v1.value=2		
 
 	def stop(self):
 		global playing
@@ -2000,8 +2218,32 @@ class SeqScreen(Screen):
 						self.loadseq()
 
 
+	def recording(self):
+		while s4.empty() is False:
+				noterec=s4.get()
+				#print(('noterec USB', noterec))
+				self.recordingnote(noterec)
+		while r4.empty() is False:
+				noterec=r4.get()
+				#print(('noterec DIN', noterec))
+				self.recordingnote(noterec)
+				
 
-
+	def recordingnote(self,noterec):
+		step=v2.value%loopsize[trackselected-1]
+		step=step/4 *4
+		if recordingON==1:
+			if [step+1,noterec-24,1,4] not in sequencepool2[trackselected-1]:
+				sequencepool2[trackselected-1].append([step+1,noterec-24,1,4])
+				sequencepool2[trackselected-1].append([step+5,noterec-24,0,4])
+				sequencepool2[trackselected-1]=sorted(sequencepool2[trackselected-1], key=operator.itemgetter(0,2))
+				sequencepool3[trackselected-1][step].append([noterec-24,1,4])
+				sequencepool3[trackselected-1][step+4].append([noterec-24,0,4])
+				sequencepool3[trackselected-1][step]=sorted(sequencepool3[trackselected-1][step], key=operator.itemgetter(1,0))
+				sequencepool3[trackselected-1][step+4]=sorted(sequencepool3[trackselected-1][step+4], key=operator.itemgetter(1,0))					
+				self.loadseq()
+				q1.put(sequencepool2)
+				q6.put(sequencepool3[trackselected-1])	
 
 	def listening(self,*args):
 		global wheel
@@ -2011,6 +2253,9 @@ class SeqScreen(Screen):
 		encodervalue=w1.value
 		encoderpushed=w2.value
 		w1.value=0
+		step=v2.value
+		self.recording()
+
 		if seqbuttonmode==0:
 			if encodervalue>0:
 				self.closemenus()
@@ -2091,6 +2336,20 @@ class SeqScreen(Screen):
 			if encoderpushed==1:
 				seqbuttonmode=0
 				self.b004.state='normal'
+		global playing
+		if v6.value==1:
+			v6.value=2
+			playing=1
+			self.b001.text="%s"%(icon('icon-pause', 22))
+			self.b001.state='down'
+			Clock.schedule_interval(self.movebar, 0.002)
+		elif v6.value==0:
+			self.b001.text="%s"%(icon('icon-play', 22))
+			self.b001.state='normal'
+			playing=0
+			v6.value=2	
+			Clock.unschedule(self.movebar)	
+			self.b015.pos=50,0
 
 
 	def LoopSdisplay(self):
@@ -2098,6 +2357,8 @@ class SeqScreen(Screen):
 		b=b/4
 		self.b004.text=str(a) + "." +str(b)
 		self.loopbar()
+
+
 
 
 
@@ -2123,6 +2384,8 @@ class SaveSeq(Screen):
 		v1.value=0
 		playing=0
 		rangeFile=0
+		w1.value=0
+		Clock.schedule_interval(self.listening, 0.002)		
 		self.b5001.text=str(rangeFile*4+1)
 		self.b5002.text=str(rangeFile*4+2)
 		self.b5003.text=str(rangeFile*4+3)
@@ -2143,11 +2406,42 @@ class SaveSeq(Screen):
 	def choice(self, chosen):
 		print(chosen)
 		if self.b001.state=="down":
-			with open('savedseq.json', "w") as s:
-				saved["savedseq"][chosen+rangeFile*4-1]["sequence"] = sequencepool2[trackselected-1]
-				json.dump(saved, s)
-
-
+			if rpi==1:
+				with open('/home/pi/Desktop2/UIP/savedseq.json', "w") as s:
+					saved["savedseq"][chosen+rangeFile*4-1]["sequence"] = sequencepool2[trackselected-1]
+					json.dump(saved, s)
+			else:
+				with open('savedseq.json', "w") as s:
+					saved["savedseq"][chosen+rangeFile*4-1]["sequence"] = sequencepool2[trackselected-1]
+					json.dump(saved, s)				
+		else:
+			from midi import MIDIFile
+			track    = 0
+			channel  = 0
+			time     = 0
+			tempo    = 120
+			volume   = 100
+			MyMIDI = MIDIFile(1)
+			MyMIDI.addTempo(track, time, tempo)			
+			for elem in sequencepool2[trackselected-1]:
+				if elem[2]==1:
+					MyMIDI.addNote(track, channel, elem[1]+24, Decimal(elem[0]-1)/16, Decimal(elem[3])/16, volume)
+			for files in os.walk('/media/pi'):
+				resulted=files
+				break
+			resulted=str(resulted[1])
+			resulted=resulted[:-2]
+			location=str(resulted[2:])
+			print(location)
+			if len(location)>1:
+				filetext='/media/pi/'+location+'/'+str(chosen+rangeFile*4)+'.mid'
+				print(filetext)
+			try:
+				with open(filetext, "wb") as output_file:
+					MyMIDI.writeFile(output_file)
+			except:
+				print("error usb")
+		self.leaving()
 
 
 	def up(self):
@@ -2192,7 +2486,41 @@ class SaveSeq(Screen):
 			self.b5015.text=str(rangeFile*4+15)
 			self.b5016.text=str(rangeFile*4+16)
 
+	def listening(self,*args):
+		global wheel
+		global buttonparam
+		encodervalue=w1.value
+		encoderpushed=w2.value
+		w1.value=0
+		if encodervalue>0:
+			wheel+=1		
+			if wheel==2:
+				wheel=0
+				self.up()
+		elif encodervalue<0:
+			wheel+=1
+			if wheel==2:
+				wheel=0
+				self.dw()
+		if rpi==1:self.usbcheck()
 
+	def usbcheck(self):
+		for files in os.walk('/media/pi'):
+			resulted=files
+			break
+		resulted=str(resulted[1])
+		resulted=resulted[:-2]
+		location=str(resulted[2:])
+		if len(location)<1:
+			self.b002.state="normal"
+			self.b001.state="down"
+			self.b002.text="EXPORT %s"%(icon('icon-lock', 22))
+		else:
+			self.b002.text="EXPORT"
+
+	def leaving(self):
+		Clock.unschedule(self.listening)
+		print("unschedule SaveSeq")
 
 class LoadSeq(Screen):
 
@@ -2202,6 +2530,8 @@ class LoadSeq(Screen):
 		v1.value=0
 		playing=0
 		rangeFile=0
+		w1.value=0
+		Clock.schedule_interval(self.listening, 0.002)		
 		self.b5001.text=str(rangeFile*4+1)
 		self.b5002.text=str(rangeFile*4+2)
 		self.b5003.text=str(rangeFile*4+3)
@@ -2222,17 +2552,54 @@ class LoadSeq(Screen):
 	def choice(self, chosen):
 		print(chosen)
 		if self.b001.state=="down":
-			with open('savedseq.json') as s:
-				saved = json.load(s)
-				print((saved["savedseq"][chosen+rangeFile*4-1]["sequence"]))
-				sequencepool2[trackselected-1]=saved["savedseq"][chosen+rangeFile*4-1]["sequence"]
-				q1.put(sequencepool2)
+			if rpi==1:
+				with open('/home/pi/Desktop2/UIP/savedseq.json') as s:
+					saved = json.load(s)
+					print((saved["savedseq"][chosen+rangeFile*4-1]["sequence"]))
+					sequencepool2[trackselected-1]=saved["savedseq"][chosen+rangeFile*4-1]["sequence"]
+					q1.put(sequencepool2)
+			else:
+				with open('savedseq.json') as s:
+					saved = json.load(s)
+					print((saved["savedseq"][chosen+rangeFile*4-1]["sequence"]))
+					sequencepool2[trackselected-1]=saved["savedseq"][chosen+rangeFile*4-1]["sequence"]
+					q1.put(sequencepool2)				
 		else:
 			from midiconvert import MIDIconvert
-			#sequencepool2[trackselected-1]=MIDIconvert('test4.mid')
+			for files in os.walk('/media/pi'):
+				resulted=files
+				break
+			resulted=str(resulted[1])
+			resulted=resulted[:-2]
+			location=str(resulted[2:])
+			print(location)
+			if len(location)>1:
+				filetext='/media/pi/'+location+'/'+str(chosen+rangeFile*4)+'.mid'
+				print(filetext)
+				try:
+					sequencepool2[trackselected-1]=MIDIconvert(filetext)
+					print(sequencepool2)
+				except:
+					print('no such file')
+					sequencepool2[trackselected-1]=[]
+			else:
+				sequencepool2[trackselected-1]=[]
 		self.convert()
+		self.leaving()
 
-
+	def usbcheck(self):
+		for files in os.walk('/media/pi'):
+			resulted=files
+			break
+		resulted=str(resulted[1])
+		resulted=resulted[:-2]
+		location=str(resulted[2:])
+		if len(location)<1:
+			self.b002.state="normal"
+			self.b001.state="down"
+			self.b002.text="IMPORT %s"%(icon('icon-lock', 22))
+		else:
+			self.b002.text="IMPORT"
 
 	def convert(self):
 		for i,elem in enumerate(sequencepool3[trackselected-1]):
@@ -2283,6 +2650,951 @@ class LoadSeq(Screen):
 			self.b5015.text=str(rangeFile*4+15)
 			self.b5016.text=str(rangeFile*4+16)
 
+	def listening(self,*args):
+		global wheel
+		global buttonparam
+		encodervalue=w1.value
+		encoderpushed=w2.value
+		w1.value=0
+		if encodervalue>0:
+			wheel+=1
+			if wheel==2:
+				wheel=0
+				self.up()
+		elif encodervalue<0:
+			wheel+=1
+			if wheel==2:
+				wheel=0
+				self.dw()
+		if rpi==1:self.usbcheck()
+
+
+	def leaving(self):
+		Clock.unschedule(self.listening)
+		print("unschedule LoadSeq")
+
+
+
+
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+
+
+
+
+class LFOScreen(Screen):
+
+	def on_enter(self):
+		w1.value=0
+		Clock.schedule_interval(self.listening, 0.002)
+		self.b003.text=str(BPM)
+		if playing==1:
+			self.b001.state="down"
+			self.b001.text="%s"%(icon('icon-pause', 22))
+		else:
+			self.b001.state="normal"
+			self.b001.text="%s"%(icon('icon-play', 22))
+		global Lline1
+		#global Lline2
+		#global Lline3
+		global Lline4
+		#global Lline5
+		#global Lline6	
+		global Lline7											
+		Lline1 = self.ids.w_canvas.canvas.get_group('a')[0]
+		#Lline2 = self.ids.w_canvas.canvas.get_group('c')[0]
+		#Lline3 = self.ids.w_canvas.canvas.get_group('d')[0]				
+		Lline4 = self.ids.w_canvas.canvas.get_group('b')[0]
+		#Lline5 = self.ids.w_canvas.canvas.get_group('e')[0]
+		#Lline6 = self.ids.w_canvas.canvas.get_group('f')[0]
+		Lline7 = self.ids.w_canvas.canvas.get_group('g')[0]					
+		global LFOcoord
+		global LFOcoordPool
+		global trackmode
+		LFOcoordPool=[[52,15,400,385,748,15,55,100],[52,15,400,385,748,15,55,100],[52,15,400,385,748,15,55,100],[52,15,400,385,748,15,55,100],[52,15,400,385,748,15,55,100],[52, 83, 540, 317, 748, 83, 175, 60]]
+		LFOcoord=LFOcoordPool[trackselected-1]
+		trackmode=[1,2,3,1,1,1,1,1,1,1,1,1,1,1,1,1] #1=seq, 2=LFO, 3=ADSR
+		self.display()
+		global lfobutmode
+		lfobutmode=6
+		print(trackselected-1)
+
+	def display(self):
+		global LFOcoordPool
+		Lline1.points=[(LFOcoord[0],LFOcoord[1]),(LFOcoord[2],LFOcoord[3])]
+		Lline4.points=[(LFOcoord[2],LFOcoord[3]),(LFOcoord[4],LFOcoord[5])]
+		self.b023.pos=(LFOcoord[2]-20,180)
+		self.b024.pos=(17,LFOcoord[3]-20)
+		self.b024.text=str(LFOcoord[7])
+		self.b025.pos[0]=LFOcoord[6]
+		Lline7.pos=(LFOcoord[2]-10,LFOcoord[3]-10)		
+		LFOcoordPool[trackselected-1]=LFOcoord
+		print(LFOcoordPool)
+
+	def leaving(self):
+		Clock.unschedule(self.listening)
+		print("unschedule seq")
+
+
+	def menu(self):
+		if self.b007.state=="down":
+			self.b008.pos= 648,360
+			self.b009.pos= 648,301
+			self.b011.pos= 496,900
+			self.b012.pos= 496,900
+			self.b013.pos= 344,900
+			self.b014.pos= 344,900
+			self.b016.pos= 344,900
+			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
+			self.b006.state="normal"
+			self.b005.state="normal"
+			self.b010.pos= 0,0
+		else:
+			self.b008.pos= 648,900
+			self.b009.pos= 648,900
+			self.b010.pos= 1000,0
+
+
+	def seqmode(self):
+		if self.b006.state=="down":
+			self.b011.pos= 496,360
+			self.b012.pos= 496,301
+			self.b008.pos= 648,900
+			self.b009.pos= 648,900
+			self.b013.pos= 344,900
+			self.b014.pos= 344,900
+			self.b016.pos= 344,900
+			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
+			self.b007.state="normal"
+			self.b005.state="normal"
+			self.b010.pos= 0,0
+		else:
+			self.b011.pos= 496,900
+			self.b012.pos= 496,900
+			self.b010.pos= 1000,0
+
+	def tools(self):
+		if self.b005.state=="down":
+			self.b013.pos= 344,360
+			#self.b014.pos= 344,301
+			#self.b016.pos= 344,242
+			#self.b020.pos= 344,183
+			#self.b022.pos= 344,124			
+			self.b011.pos= 496,900
+			self.b012.pos= 496,900
+			self.b008.pos= 648,900
+			self.b009.pos= 648,900
+			self.b007.state="normal"
+			self.b006.state="normal"
+			self.b010.pos= 0,0
+		else:
+			self.b013.pos= 344,900
+			self.b014.pos= 344,900
+			self.b016.pos= 344,900
+			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
+			self.b010.pos= 1000,0
+
+	def recording(self):
+		if self.b022.text=='REC OFF':
+			self.b022.text='REC ON'
+		else:
+			self.b022.text='REC OFF'			
+
+
+	def mode(self,num):
+		global lfobutmode
+		if num==1:
+			if lfobutmode==1:
+				lfobutmode=0
+				self.b020.state='normal'
+			else:
+				lfobutmode=1
+				self.b020.state='down'
+				w2.value=0
+		if num==2:
+			if lfobutmode==2:
+				lfobutmode=0
+				self.b003.state='normal'
+			else:
+				lfobutmode=2
+				self.b003.state='down'
+				w2.value=0
+		if num==3:
+			if lfobutmode==3:
+				lfobutmode=0
+				self.b004.state='normal'
+			else:
+				lfobutmode=3
+				self.b004.state='down'
+				w2.value=0
+		if num==4:
+			if lfobutmode==4:
+				lfobutmode=0
+				self.b025.state='normal'
+			else:
+				lfobutmode=4
+				self.b025.state='down'
+				w2.value=0
+		if num==5:
+			if lfobutmode==5:
+				lfobutmode=0
+				self.b024.state='normal'
+			else:
+				lfobutmode=5
+				self.b024.state='down'
+				w2.value=0				
+
+
+		if num==6:
+			lfobutmode=6
+			self.b003.state='normal'
+			self.b004.state='normal'
+			self.b020.state='normal'
+		print(("buton mode",lfobutmode))
+
+
+
+	def closemenus(self):
+		if self.b007.state=="down":
+			self.b007.state="normal"
+			self.menu()
+		if self.b006.state=="down":
+			self.b006.state="normal"
+			self.seqmode()
+		if self.b005.state=="down":
+			self.b005.state="normal"
+			self.tools()
+
+	def start(self):
+		global playing
+		if self.b001.state=="down":
+			v1.value=1
+			playing=1
+			self.b001.text="%s"%(icon('icon-pause', 22))
+		else:
+			self.b001.text="%s"%(icon('icon-play', 22))
+			playing=0
+			v1.value=2
+
+
+
+	def stop(self):
+		global playing
+		self.b001.state="normal"
+		self.b001.text="%s"%(icon('icon-play', 22))
+		v1.value=0
+		playing=0
+
+	def reset(self):
+		global LFOcoord
+		LFOcoord=[52,15,400,385,748,15,55,100]
+		self.display()
+
+
+	def rgt(self):
+		global LFOcoord
+		if LFOcoord[2]<730:
+			LFOcoord[2]+=20
+			self.display()
+
+	def lft(self):
+		global LFOcoord
+		if LFOcoord[2]>70:
+			LFOcoord[2]+=-20
+			self.display()
+
+	def up(self):
+		global LFOcoord
+		if int(self.b024.text)>10:
+			LFOcoord[1]+=17
+			LFOcoord[3]+=-17
+			LFOcoord[5]+=17
+			LFOcoord[7]+=-10	
+			self.display()
+
+	def dw(self):
+		global LFOcoord
+		if int(self.b024.text)<100:		
+			LFOcoord[1]+=-17
+			LFOcoord[3]+=17
+			LFOcoord[5]+=-17
+			LFOcoord[7]+=10				
+			self.display()
+
+	def strl(self):
+		global LFOcoord
+		if self.b025.pos[0]>70:
+			LFOcoord[6]+=-20
+			self.display()
+
+
+	def strr(self):
+		global LFOcoord
+		if self.b025.pos[0]<730:
+			LFOcoord[6]+=20
+			self.display()
+
+
+	def listening(self,*args):
+		global wheel
+		global lfobutmode
+		global loopsize
+		global BPM
+		encodervalue=w1.value
+		encoderpushed=w2.value
+		w1.value=0
+		step=v2.value
+
+		if lfobutmode==0:
+			pass
+
+		if lfobutmode==1:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.rgt()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.lft()
+			if encoderpushed==1:
+				lfobutmode=0
+				self.b023.state='normal'
+				self.closemenus()
+
+		if lfobutmode==2:
+			if encodervalue>0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if BPM<200:
+						BPM+=1
+						self.b003.text=str(BPM)
+						v4.value=BPM
+			elif encodervalue<0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if BPM>30:
+						BPM-=1
+						self.b003.text=str(BPM)
+						v4.value=BPM
+			if encoderpushed==1:
+				lfobutmode=0
+				self.b003.state='normal'
+
+
+		if lfobutmode==3:
+			if encodervalue>0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if loopsize[trackselected-1]<64*16:
+						loopsize[trackselected-1]+=16
+						q2.put(loopsize)
+						self.LoopSdisplay()
+			elif encodervalue<0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if loopsize[trackselected-1]>16:
+						loopsize[trackselected-1]-=16
+						q2.put(loopsize)
+						self.LoopSdisplay()
+			if encoderpushed==1:
+				lfobutmode=0
+				self.b004.state='normal'
+
+		if lfobutmode==4:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strr()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strl()
+			if encoderpushed==1:
+				lfobutmode=0
+				self.b025.state='normal'
+				self.closemenus()
+		if lfobutmode==5:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.up()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.dw()
+			if encoderpushed==1:
+				lfobutmode=0
+				self.b024.state='normal'
+				self.closemenus()
+		global playing
+		if v6.value==1:
+			v6.value=2
+			playing=1
+			self.b001.text="%s"%(icon('icon-pause', 22))
+			self.b001.state='down'
+		elif v6.value==0:
+			self.b001.text="%s"%(icon('icon-play', 22))
+			self.b001.state='normal'
+			playing=0
+			v6.value=2
+
+
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+
+
+
+class ADSRScreen(Screen):
+
+	def on_enter(self):
+		w1.value=0
+		Clock.schedule_interval(self.listening, 0.002)
+		self.b003.text=str(BPM)
+		if playing==1:
+			self.b001.state="down"
+			self.b001.text="%s"%(icon('icon-pause', 22))
+		else:
+			self.b001.state="normal"
+			self.b001.text="%s"%(icon('icon-play', 22))
+		global Lline1
+		global Lline2
+		global Lline3
+		global Lline4
+		global Lline5
+		global Lline6	
+		global Lline7									
+		Lline1 = self.ids.w_canvas.canvas.get_group('a')[0]
+		Lline2 = self.ids.w_canvas.canvas.get_group('b')[0]
+		Lline3 = self.ids.w_canvas.canvas.get_group('c')[0]				
+		Lline4 = self.ids.w_canvas.canvas.get_group('d')[0]
+		Lline5 = self.ids.w_canvas.canvas.get_group('e')[0]
+		Lline6 = self.ids.w_canvas.canvas.get_group('f')[0]
+		Lline7 = self.ids.w_canvas.canvas.get_group('g')[0]	
+		global ADSRcoord
+		global ADSRcoordPool
+		global trackmode
+		ADSRcoordPool=[[52, 30, 100, 385, 150, 200, 300, 200, 500, 30, 100, 50],[52,15,400,385,748,15,55,100],[52,15,400,385,748,15,55,100],[52,15,400,385,748,15,55,100],[52,15,400,385,748,15,55,100],[52, 83, 540, 317, 748, 83, 175, 60]]
+		ADSRcoord=ADSRcoordPool[trackselected-1]
+		trackmode=[1,2,3,1,1,1,1,1,1,1,1,1,1,1,1,1] #1=seq, 2=LFO, 3=ADSR
+		self.display()
+		global adsrbutmode
+		adsrbutmode=0
+		print(trackselected-1)
+
+	def display(self):
+		global ADSRcoordPool
+		Lline1.points=[(ADSRcoord[0],ADSRcoord[1]),(ADSRcoord[2],ADSRcoord[3])]
+		Lline2.points=[(ADSRcoord[2],ADSRcoord[3]),(ADSRcoord[4],ADSRcoord[5])]
+		Lline3.points=[(ADSRcoord[4],ADSRcoord[5]),(ADSRcoord[6],ADSRcoord[7])]
+		Lline4.points=[(ADSRcoord[6],ADSRcoord[7]),(ADSRcoord[8],ADSRcoord[9])]				
+		self.b023.pos=(ADSRcoord[2]-20,13)
+		self.b024.pos=(17,ADSRcoord[3]-20)
+		self.b024.text=str(ADSRcoord[10])
+		self.b028.pos=(17,ADSRcoord[5]-20)
+		self.b028.text=str(ADSRcoord[11])
+		self.b025.pos=(ADSRcoord[4]-20,13)
+		self.b026.pos=(ADSRcoord[6]-20,13)
+		self.b027.pos=(ADSRcoord[8]-20,13)
+		ADSRcoordPool[trackselected-1]=ADSRcoord
+		Lline5.pos=(ADSRcoord[2]-10,ADSRcoord[3]-10)
+		Lline6.pos=(ADSRcoord[4]-10,ADSRcoord[5]-10)
+		Lline7.pos=(ADSRcoord[6]-10,ADSRcoord[7]-10)		
+		print(ADSRcoordPool)
+
+	def leaving(self):
+		Clock.unschedule(self.listening)
+		print("unschedule seq")
+
+
+	def menu(self):
+		if self.b007.state=="down":
+			self.b008.pos= 648,360
+			self.b009.pos= 648,301
+			self.b011.pos= 496,900
+			self.b012.pos= 496,900
+			self.b013.pos= 344,900
+			self.b014.pos= 344,900
+			self.b016.pos= 344,900
+			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
+			self.b006.state="normal"
+			self.b005.state="normal"
+			self.b010.pos= 0,0
+		else:
+			self.b008.pos= 648,900
+			self.b009.pos= 648,900
+			self.b010.pos= 1000,0
+
+
+	def seqmode(self):
+		if self.b006.state=="down":
+			self.b011.pos= 496,360
+			self.b012.pos= 496,301
+			self.b008.pos= 648,900
+			self.b009.pos= 648,900
+			self.b013.pos= 344,900
+			self.b014.pos= 344,900
+			self.b016.pos= 344,900
+			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
+			self.b007.state="normal"
+			self.b005.state="normal"
+			self.b010.pos= 0,0
+		else:
+			self.b011.pos= 496,900
+			self.b012.pos= 496,900
+			self.b010.pos= 1000,0
+
+	def tools(self):
+		if self.b005.state=="down":
+			self.b013.pos= 344,360
+			#self.b014.pos= 344,301
+			#self.b016.pos= 344,242
+			#self.b020.pos= 344,183
+			#self.b022.pos= 344,124			
+			self.b011.pos= 496,900
+			self.b012.pos= 496,900
+			self.b008.pos= 648,900
+			self.b009.pos= 648,900
+			self.b007.state="normal"
+			self.b006.state="normal"
+			self.b010.pos= 0,0
+		else:
+			self.b013.pos= 344,900
+			self.b014.pos= 344,900
+			self.b016.pos= 344,900
+			self.b020.pos= 344,900
+			self.b022.pos= 344,900			
+			self.b010.pos= 1000,0
+
+	def recording(self):
+		if self.b022.text=='REC OFF':
+			self.b022.text='REC ON'
+		else:
+			self.b022.text='REC OFF'			
+
+
+	def mode(self,num):
+		global adsrbutmode
+		if num==1:
+			if adsrbutmode==1:
+				adsrbutmode=0
+				self.b023.state='normal'
+			else:
+				adsrbutmode=1
+				self.b023.state='down'
+				w2.value=0
+		if num==2:
+			if adsrbutmode==2:
+				adsrbutmode=0
+				self.b003.state='normal'
+			else:
+				adsrbutmode=2
+				self.b003.state='down'
+				w2.value=0
+		if num==3:
+			if adsrbutmode==3:
+				adsrbutmode=0
+				self.b004.state='normal'
+			else:
+				adsrbutmode=3
+				self.b004.state='down'
+				w2.value=0
+		if num==4:
+			if adsrbutmode==4:
+				adsrbutmode=0
+				self.b025.state='normal'
+			else:
+				adsrbutmode=4
+				self.b025.state='down'
+				w2.value=0
+		if num==5:
+			if adsrbutmode==5:
+				adsrbutmode=0
+				self.b024.state='normal'
+			else:
+				adsrbutmode=5
+				self.b024.state='down'
+				w2.value=0				
+		if num==6:
+			if adsrbutmode==6:
+				adsrbutmode=0
+				self.b028.state='normal'
+			else:
+				adsrbutmode=6
+				self.b028.state='down'
+				w2.value=0	
+		if num==7:
+			if adsrbutmode==7:
+				adsrbutmode=0
+				self.b026.state='normal'
+			else:
+				adsrbutmode=7
+				self.b026.state='down'
+				w2.value=0	
+		if num==8:
+			if adsrbutmode==8:
+				adsrbutmode=0
+				self.b027.state='normal'
+			else:
+				adsrbutmode=8
+				self.b027.state='down'
+				w2.value=0	
+										
+
+		if num==9:
+			adsrbutmode=0
+			self.b003.state='normal'
+			self.b004.state='normal'
+			self.b020.state='normal'
+		print(("buton mode",adsrbutmode))
+
+
+
+	def closemenus(self):
+		if self.b007.state=="down":
+			self.b007.state="normal"
+			self.menu()
+		if self.b006.state=="down":
+			self.b006.state="normal"
+			self.seqmode()
+		if self.b005.state=="down":
+			self.b005.state="normal"
+			self.tools()
+
+	def start(self):
+		global playing
+		if self.b001.state=="down":
+			v1.value=1
+			playing=1
+			self.b001.text="%s"%(icon('icon-pause', 22))
+		else:
+			self.b001.text="%s"%(icon('icon-play', 22))
+			playing=0
+			v1.value=2
+
+
+
+	def stop(self):
+		global playing
+		self.b001.state="normal"
+		self.b001.text="%s"%(icon('icon-play', 22))
+		v1.value=0
+		playing=0
+
+	def reset(self):
+		global ADSRcoord
+		ADSRcoord=[52, 30, 100, 385, 150, 200, 300, 200, 500, 30, 100, 50]
+		self.display()
+
+
+	def rgt(self):
+		global ADSRcoord
+		if ADSRcoord[2]<730:
+			ADSRcoord[2]+=20
+			ADSRcoord[4]+=20
+			ADSRcoord[6]+=20
+			ADSRcoord[8]+=20
+			self.display()
+
+	def lft(self):
+		global ADSRcoord
+		if ADSRcoord[2]>70:
+			ADSRcoord[2]+=-20
+			ADSRcoord[4]+=-20
+			ADSRcoord[6]+=-20
+			ADSRcoord[8]+=-20			
+			self.display()
+
+	def strl(self):
+		global ADSRcoord
+		if self.b025.pos[0]>self.b023.pos[0]+50:
+			ADSRcoord[4]+=-20
+			ADSRcoord[6]+=-20			
+			ADSRcoord[8]+=-20			
+			self.display()
+
+	def strr(self):
+		global ADSRcoord
+		if self.b025.pos[0]<730:
+			ADSRcoord[4]+=20
+			ADSRcoord[6]+=20			
+			ADSRcoord[8]+=20	
+			self.display()
+
+	def strll(self):
+		global ADSRcoord
+		if self.b026.pos[0]>self.b025.pos[0]+50:
+			ADSRcoord[6]+=-20			
+			ADSRcoord[8]+=-20			
+			self.display()
+
+	def strrr(self):
+		global ADSRcoord
+		if self.b026.pos[0]<730:
+			ADSRcoord[6]+=20			
+			ADSRcoord[8]+=20	
+			self.display()
+
+	def strlll(self):
+		global ADSRcoord
+		if self.b027.pos[0]>self.b026.pos[0]+50:		
+			ADSRcoord[8]+=-20			
+			self.display()
+
+	def strrrr(self):
+		global ADSRcoord
+		if self.b027.pos[0]<730:			
+			ADSRcoord[8]+=20	
+			self.display()
+
+	def up(self):
+		global ADSRcoord
+		if int(self.b024.text)<100:
+			ADSRcoord[3]+=34
+			ADSRcoord[10]+=10	
+			self.display()
+
+	def dw(self):
+		global ADSRcoord
+		if int(self.b024.text)>int(self.b028.text) and int(self.b024.text)>20:		
+			ADSRcoord[3]+=-34
+			ADSRcoord[10]+=-10			
+			self.display()
+
+	def up2(self):
+		global ADSRcoord
+		if int(self.b028.text)<int(self.b024.text):
+			ADSRcoord[5]+=34
+			ADSRcoord[7]+=34
+			ADSRcoord[11]+=10	
+			self.display()
+
+	def dw2(self):
+		global ADSRcoord
+		if int(self.b028.text)>10:		
+			ADSRcoord[5]+=-34
+			ADSRcoord[7]+=-34
+			ADSRcoord[11]+=-10			
+			self.display()
+
+
+	def listening(self,*args):
+		global wheel
+		global adsrbutmode
+		global loopsize
+		global BPM
+		encodervalue=w1.value
+		encoderpushed=w2.value
+		w1.value=0
+		step=v2.value
+
+		if adsrbutmode==0:
+			pass
+
+		if adsrbutmode==1:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.rgt()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.lft()
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b023.state='normal'
+				self.closemenus()
+
+		if adsrbutmode==2:
+			if encodervalue>0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if BPM<200:
+						BPM+=1
+						self.b003.text=str(BPM)
+						v4.value=BPM
+			elif encodervalue<0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if BPM>30:
+						BPM-=1
+						self.b003.text=str(BPM)
+						v4.value=BPM
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b003.state='normal'
+
+
+		if adsrbutmode==3:
+			if encodervalue>0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if loopsize[trackselected-1]<64*16:
+						loopsize[trackselected-1]+=16
+						q2.put(loopsize)
+						self.LoopSdisplay()
+			elif encodervalue<0:
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					if loopsize[trackselected-1]>16:
+						loopsize[trackselected-1]-=16
+						q2.put(loopsize)
+						self.LoopSdisplay()
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b004.state='normal'
+
+		if adsrbutmode==4:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strr()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strl()
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b025.state='normal'
+				self.closemenus()
+
+		if adsrbutmode==5:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.up()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.dw()
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b024.state='normal'
+				self.closemenus()				
+
+		if adsrbutmode==6:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.up2()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.dw2()
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b028.state='normal'
+				self.closemenus()
+
+		if adsrbutmode==7:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strrr()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strll()
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b026.state='normal'
+				self.closemenus()
+
+		if adsrbutmode==8:
+			if encodervalue>0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strrrr()
+			elif encodervalue<0:
+				self.closemenus()
+				wheel+=1
+				if wheel==2:
+					wheel=0
+					self.strlll()
+			if encoderpushed==1:
+				adsrbutmode=0
+				self.b027.state='normal'
+				self.closemenus()								
+		global playing
+		if v6.value==1:
+			v6.value=2
+			playing=1
+			self.b001.text="%s"%(icon('icon-pause', 22))
+			self.b001.state='down'
+		elif v6.value==0:
+			self.b001.text="%s"%(icon('icon-play', 22))
+			self.b001.state='normal'
+			playing=0
+			v6.value=2
 
 
 ##############################################################################################
@@ -2302,11 +3614,12 @@ class LoadSeq(Screen):
 class Timing():
 
 
-	def Timer(self,v1,v2,v3,v4,v5,q1,q2,q3,q4,q5,q6):
+	def Timer(self,v1,v2,v3,v4,v5,v6,q1,q2,q3,q4,q5,q6):
 		nextcall=time.time()
 		count=0
 		MIDIstoped=0
 		paused=0
+		portopened=0
 
 		while 1:
 			BPM=v4.value
@@ -2315,30 +3628,30 @@ class Timing():
 			trackselected=v5.value
 			while q1.empty() is False:
 					sequencepool2=q1.get()
-					#print('sequencepool2', sequencepool2)
+					if rpi==0:print('sequencepool2', sequencepool2)
 			while q2.empty() is False:
 					loopsize=q2.get()
-					print(('loopsize', loopsize))
+					if rpi==0:print(('loopsize', loopsize))
 			while q3.empty() is False:
 					song=q3.get()
-					print(('song', song))
+					if rpi==0:print(('song', song))
 			while q4.empty() is False:
 					Sendinfo=q4.get()
-					print(('sendinfo', Sendinfo))
+					if rpi==0:print(('sendinfo', Sendinfo))
 			while q5.empty() is False:
 					Syncinfo=q5.get()
-					print(('Syncinfo',Syncinfo))
+					if rpi==0:print(('Syncinfo',Syncinfo))
 			while q6.empty() is False:
 					update3=q6.get()
-					print(("updated seq3",update3))
-					print(('trackselected',trackselected))
+					#print(("updated seq3",update3))
+					#print(('trackselected',trackselected))
 					sequencepool3[trackselected-1]=update3
-					#print('sequencepool3queue', sequencepool3[trackselected-1])
+					if rpi==0:print('sequencepool3[track]', sequencepool3[trackselected-1])
 					#print('sequencepool3queue', sequencepool3)
 					#pass
 
 
-			if rpi==1:
+			if rpi==1 and Syncinfo[4]==0:
 				available_ports = midiout.get_ports()
 				port = available_ports[0]
 				if len(available_ports)>1:
@@ -2402,13 +3715,13 @@ class Timing():
 			pos=count%loopsize[n]-1
 			if pos==0:
 				if n+1 in song[int(count/(16*4))-1]:
-					print(("All Notes Off on track: ",n+1))
+					#print(("All Notes Off on track: ",n+1))
 					if Sendinfo[n][6]==1:
 						self.noteoffUSB(n,Sendinfo,port)
 					if Sendinfo[n][6]==2:
 						self.noteoffMIDI(n,Sendinfo)
 				if n+1 in song[int(v3.value/(16*4))-1] and count==1:
-					print(("All Notes Off on track (looped): ",n+1))
+					#print(("All Notes Off on track (looped): ",n+1))
 					if Sendinfo[n][6]==1:
 						self.noteoffUSB(n,Sendinfo,port)
 					if Sendinfo[n][6]==2:
@@ -2416,7 +3729,7 @@ class Timing():
 			if n+1 in song[int(count/(16*4))]:
 				if len(track[pos])>0:
 					for elem in track[pos]:
-						print(("Sending",elem))
+						#print(("Sending",elem))
 						if Sendinfo[n][6]==1:
 							self.USBsend2(n,elem,Sendinfo,port)
 						if Sendinfo[n][6]==2:
@@ -2437,7 +3750,7 @@ class Timing():
 
 
 	def noteoffUSB(self,n,Sendinfo,port):
-		print("note off USB")
+		#print("note off USB")
 		channel=Sendinfo[n][0]-1
 		msg=mido.Message('control_change', channel=channel,control=123)
 		try:
@@ -2447,7 +3760,7 @@ class Timing():
 			#print('(Port error note off)')
 
 	def noteoffMIDI(self,n,Sendinfo):
-		print("note off DIN")
+		#print("note off DIN")
 		byte1=bin(int(176+Sendinfo[n][0]-1))
 		byte2=bin(int(123))
 		byte3=bin(0)
@@ -2477,10 +3790,10 @@ class Timing():
 			#print(message)
 			try:
 				port.send(msg)
-				print("clock1")
+				#print("clock1")
 				if Syncinfo[3]==2 and message=="clock":
 					port.send(msg)
-					print("clock2")
+					#print("clock2")
 			except:
 				pass
 				#print('(Port error message)')
@@ -2488,38 +3801,41 @@ class Timing():
 
 	def CVsendGate2(self,n,elem,Sendinfo):
 			if elem[1]==1:
-				print(('CV Gate On',Sendinfo[n][3], Sendinfo[n][4], 'Value: 8V'))
+				#print(('CV Gate On',Sendinfo[n][3], Sendinfo[n][4], 'Value: 8V'))
 				if rpi==1:
 					try:
 						bus.write_i2c_block_data(Sendinfo[n][3], Sendinfo[n][4], [0x0D, 0xE0])
 					except:
-						print("No DAC found")
+						#print("No DAC found")
+						pass
 			else:
-				print(('CV Gate Off',Sendinfo[n][3], Sendinfo[n][4], 'Value: 0V'))
+				#print(('CV Gate Off',Sendinfo[n][3], Sendinfo[n][4], 'Value: 0V'))
 				if rpi==1:
 					try:
 						bus.write_i2c_block_data(Sendinfo[n][3], Sendinfo[n][4], [0x05, 0x55])
 					except:
-						print("No DAC found")
+						#print("No DAC found")
+						pass
 
 	def CVsendPitch2(self,n,elem,Sendinfo):
 			if elem[1]==1:
 				a,b=divmod(4096*elem[0]/15/12+4096/15*Sendinfo[n][5],256)
-				print(('CV Pitch On',Sendinfo[n][1],Sendinfo[n][2], 'Value',elem[0], 'Offset' , Sendinfo[n][5]))
+				#print(('CV Pitch On',Sendinfo[n][1],Sendinfo[n][2], 'Value',elem[0], 'Offset' , Sendinfo[n][5]))
 				if rpi==1:
 					try:
 						bus.write_i2c_block_data(Sendinfo[n][1], Sendinfo[n][2], [a, b])
 					except:
-						print("No DAC found")
+						#print("No DAC found")
+						pass
 
 
 	def MIDIsend2(self,n,elem,Sendinfo):
 		if elem[1]==1:
-			print(("DIN send" , elem[0] ,"channel" , Sendinfo[n][0]))
+			#print(("DIN send" , elem[0] ,"channel" , Sendinfo[n][0]))
 			byte1=bin(int(128+16+Sendinfo[n][0]-1))
 			byte3=bin(100)
 		else:
-			print(("DIN stop" , elem[0] ,"channel" , Sendinfo[n][0]))
+			#print(("DIN stop" , elem[0] ,"channel" , Sendinfo[n][0]))
 			byte1=bin(int(128+Sendinfo[n][0]-1))
 			byte3=bin(0)
 		byte2 = bin(int(24+elem[0]))
@@ -2541,12 +3857,13 @@ class Timing():
 		try:
 			port.send(msg)
 		except:
-			print('(Port error sending)')
+			#print('(Port error sending)')
+			pass
 
 	def jacksyncstart(self,Syncinfo,BPM):
 		if rpi==1:
 			GPIO.output(jackstart,GPIO.HIGH)
-			print(("BPMM",BPM*Syncinfo[2]/4))
+			#print(("BPMM",BPM*Syncinfo[2]/4))
 			pwmsync.ChangeFrequency(BPM*Syncinfo[2]/4)
 			pwmsync.start(50)
 
@@ -2620,36 +3937,28 @@ class Listen():
 class Listen2():
 
 
-	def starting(self,r1,r2,r3):
+	def starting(self,r1,r2,r3,r4):
 		global midibyte
 		global messagemidi
 		midibyte=0
 		messagemidi = [0, 0, 0]
 
-		if rpi==1:
-			midi_in = rtmidi.MidiIn()
-
+		
 		while 1:
-			if rpi==2:
-				available_ports = midiout.get_ports()
-				if len(available_ports)>1:
-					midi_in.open_port(1)
-				else:
-					pass
-					#midi_in.open_port(0)
 			while r1.empty() is False:
 				Sendinfo=r1.get()
-				print(('Sendinfo', Sendinfo))
+				#print(('Sendinfo', Sendinfo))
 			while r2.empty() is False:
 				trackselected=r2.get()
-				print(('trackselected', trackselected))
+				#print(('trackselected', trackselected))
 			while r3.empty() is False:
 				Syncinfo=r3.get()
-				print(('Syncinfo', Syncinfo))
+				#print(('Syncinfo2', Syncinfo))	
+			#print("listen2")		
 			self.MIDIdinIn(Sendinfo,trackselected,Syncinfo)
-			#self.MIDIusbIn(Sendinfo,trackselected)
+			#time.sleep(0.001)
 			time.sleep(0.001)
-
+			
 
 
 	def MIDIdinIn(self,Sendinfo,trackselected,Syncinfo):
@@ -2657,8 +3966,10 @@ class Listen2():
 		if rpi==1:
 			while midibyte < 3:
 				data = ord(ser.read(1)) # read a byte
+				#print(data)
 				if data==250 or data==251 or data==252:
-					self.DINsync(data,Syncinfo)
+				#	self.DINsyncout(data,Syncinfo)
+					self.DINsyncin(data)
 				if data >> 7 != 0:
 					midibyte = 0      # status byte!   this is the beginning of a midi message!
 				messagemidi[midibyte] = data
@@ -2669,12 +3980,36 @@ class Listen2():
 			note = messagemidi[1] if len(messagemidi) > 1 else None
 			velocity = messagemidi[2] if len(messagemidi) > 2 else None
 			if messagetype==8 or messagetype==9 or messagetype==11:
-				self.ThroughDin([messagetype,note,velocity],Sendinfo,trackselected)
+				#self.ThroughDin([messagetype,note,velocity],Sendinfo,trackselected)
+				self.ThroughCV([messagetype,note,velocity],Sendinfo,trackselected)
+			if messagetype==9:
+				self.DinINRec(note)
 
 		else:
 			pass
 
-	def DINsync(self,message,Syncinfo):
+	def DinINRec(self,note):
+		#print(note)
+		r4.put(note)
+
+	def DINsyncin(self,message):
+		if v6.value==0 or 1:
+			v6.value=2
+		if message==250:
+			#print("PLAY")
+			v1.value=1
+			v6.value=1
+		if message==251:
+			#print("CONTINUE")
+			v1.value=1
+			v6.value=1
+		if message==252:
+			#print("STOP")
+			v1.value=0
+			v6.value=0
+
+
+	def DINsyncout(self,message,Syncinfo):
 		if Syncinfo[0]==1:
 			byte1=bin(int(message))
 			byte_chr1 = chr(int(byte1,2))
@@ -2687,18 +4022,6 @@ class Listen2():
 		if message==252:
 			print("STOP")
 
-
-	def MIDIusbIn(self,Sendinfo,trackselected):
-		if rpi==1:
-			message= midi_in.get_message()
-			if message:
-				print(message[0])
-				self.ThroughDin(message[0],Sendinfo,trackselected)
-				self.ThroughCV(message[0],Sendinfo,trackselected)
-
-
-	def ThroughUSB(self,Message,Sendinfo,trackselected):
-		pass
 
 	def ThroughDin(self,Message,Sendinfo,trackselected):
 		if Message[0]==9:
@@ -2722,18 +4045,124 @@ class Listen2():
 		ser.write(byte_chr3)
 
 	def ThroughCV(self,Message,Sendinfo,trackselected):
-		if Sendinfo[3]>0:
+		print(Message)
+		if Sendinfo[trackselected-1][3]>0:
 			if Message[0]==0x90:
 				if rpi==1:
 					bus.write_i2c_block_data(Sendinfo[trackselected][3], Sendinfo[trackselected][4], [0x09, 0xFF])
 			if Message[0]==0x80:
 				if rpi==1:
 					bus.write_i2c_block_data(Sendinfo[trackselected][3], Sendinfo[trackselected][4], [0x05, 0x0])
-		if Sendinfo[1]>0:
+		if Sendinfo[trackselected-1][1]>0:
 			if Message[0]==0x90 and (Message[1]-24)>0 and (Message[1]-24)<96 :
 				a,b=divmod(4096*(Message[1]-24)/15/12+4096/15*Sendinfo[trackselected][5],256)
 				if rpi==1:
 					bus.write_i2c_block_data(Sendinfo[trackselected][1], Sendinfo[trackselected][2], [a, b])
+
+
+
+
+class Listen3():
+
+
+	def starting(self,s1,s2,s3,s4):
+		portopened=0
+		if rpi==1:
+			midi_in = rtmidi.MidiIn()
+
+		while 1:
+			while s1.empty() is False:
+				Sendinfo=s1.get()
+				#if rpi==0:print(('Sendinfo', Sendinfo))
+			while s2.empty() is False:
+				trackselected=s2.get()
+				if rpi==0:print(('trackselected', trackselected))
+			while s3.empty() is False:
+				Syncinfo=s3.get()
+				#if rpi==0:print(('Syncinfo', Syncinfo))
+			if rpi==1 and Syncinfo[4]==1:
+				available_ports = midiout.get_ports()
+				if len(available_ports)==2 and portopened==0:
+					midi_in = rtmidi.MidiIn()
+					midi_in.open_port(1)
+					portopened=1
+				elif len(available_ports)==2 and portopened==1:
+					midi_in.close_port()
+					portopened=0
+					del midi_in
+					print('deleted port')	
+			if Syncinfo[4]==0:
+				try:
+					del midi_in
+				except:
+					pass
+				portopened=0		
+			if rpi==1 and portopened==1:
+				self.MIDIusbIn(Sendinfo,trackselected,midi_in,Syncinfo)
+			time.sleep(0.001)
+
+
+	def MIDIusbIn(self,Sendinfo,trackselected,midi_in,Syncinfo):
+		if rpi==1:
+			try:
+				message= midi_in.get_message()
+				if message:
+					#self.ThroughCV(message[0],Sendinfo,trackselected)
+					self.USBrec(message[0])
+					#print(message)
+					self.USBsyncin(message[0])
+					#self.USBsync(message[0],Syncinfo) #pour plus tard
+			except:
+				print("midi_in unknown")
+
+	def USBsyncin(self,message):
+		if v6.value==0 or 1:
+			v6.value=2
+		if message[0]==250:
+			#print("PLAY")
+			v1.value=1
+			v6.value=1
+		if message[0]==251:
+			#print("CONTINUE")
+			v1.value=1
+			v6.value=1
+		if message[0]==252:
+			#print("STOP")
+			v1.value=0
+			v6.value=0
+
+
+	def USBrec(self,message):
+		if 144 <= message[0] <= 159:
+			s4.put(message[1])
+
+	def USBsync(self,message,Syncinfo):
+		if Syncinfo[1]==1:
+			if message[0]==250: #play
+				print("play")
+				v1.value=1
+			if message[0]==252: #stop
+				v1.value=2
+			if message[0]==251: #continue
+				v1.value=2
+		print(message)
+
+
+	def ThroughCV(self,Message,Sendinfo,trackselected):
+		if Sendinfo[trackselected-1][3]>0:
+			if Message[0]==144:
+				if rpi==1:
+					bus.write_i2c_block_data(Sendinfo[trackselected][3], Sendinfo[trackselected][4], [0x09, 0xFF])
+			if Message[0]==128:
+				if rpi==1:
+					bus.write_i2c_block_data(Sendinfo[trackselected][3], Sendinfo[trackselected][4], [0x05, 0x0])
+		if Sendinfo[trackselected-1][1]>0:
+			if Message[0]==144 and (Message[1]-24)>0 and (Message[1]-24)<96 :
+				a,b=divmod(4096*(Message[1]-24)/15/12+4096/15*Sendinfo[trackselected][5],256)
+				if rpi==1:
+					bus.write_i2c_block_data(Sendinfo[trackselected][1], Sendinfo[trackselected][2], [a, b])
+
+
 
 
 
@@ -2917,6 +4346,7 @@ interval=float(60/Decimal(BPM)/Decimal(16))
 count=0
 seqbuttonmode=0
 seqbuttonmodesong=0
+recordingON=0
 
 
 
@@ -2927,23 +4357,36 @@ playing=0
 
 buttonpushed="b000"
 buttonpushedsong="b000"
-with open('param.json') as f:
-	paramcf1 = json.load(f)
-with open('savedseq.json') as s:
-	saved = json.load(s)
+if rpi==1:
+	with open('/home/pi/Desktop2/UIP/param.json') as f:
+		paramcf1 = json.load(f)
+	with open('/home/pi/Desktop2/UIP/savedseq.json') as s:
+		saved = json.load(s)
+	with open("/home/pi/Desktop2/UIP/licence.json") as l:
+		licence=json.load(l)
+else:
+	with open('param.json') as f:
+		paramcf1 = json.load(f)
+	with open('savedseq.json') as s:
+		saved = json.load(s)
+	with open("licence.json") as l:
+		licence=json.load(l)	
+version=licence["licence"][0]["version"]
+print("CFM1 Version: " + str(version))
 
 paramcalc=ParamScreen()
 Sendinfo=paramcalc.convert()
 
-Syncinfo=[0,0,0,0]
+#[din sync,usb sync,clock ppq,usb ppq,usb in (1) or out (0)]
+Syncinfo=[0,0,0,0,0]
 Syncinfo=paramcalc.convertsync()
 
-"""midiout = rtmidi.MidiOut()"""
-midiout = 0
+midiout = rtmidi.MidiOut()
+#midiout = 0
 
-def outsmp(v1,v2,v3,v4,v5,q1,q2,q3,q4,q5,q6):
+def outsmp(v1,v2,v3,v4,v5,v6,q1,q2,q3,q4,q5,q6):
 	ti=Timing()
-	ti.Timer(v1,v2,v3,v4,v5,q1,q2,q3,q4,q5,q6)
+	ti.Timer(v1,v2,v3,v4,v5,v6,q1,q2,q3,q4,q5,q6)
 
 #v1: playing ; v2: count ; v3: song size ; v4: BPM
 #q1:sequencepool ; q2: loopsize ; q3: song ; q4: Sendinfo
@@ -2957,6 +4400,8 @@ v4=multiprocessing.Value('i',1)
 v4.value=BPM
 v5=multiprocessing.Value('i',1)
 v5.value=trackselected
+v6=multiprocessing.Value('i',1)
+v6.value=2
 
 q1=multiprocessing.Queue()
 q1.put(sequencepool2)
@@ -2983,9 +4428,9 @@ w2=multiprocessing.Value('i',1)
 w2.value=0
 
 
-def insmp2(r1,r2,r3):
+def insmp2(r1,r2,r3,r4):
 	listen2=Listen2()
-	listen2.starting(r1,r2,r3)
+	listen2.starting(r1,r2,r3,r4)
 
 r1=multiprocessing.Queue()
 r1.put(Sendinfo)
@@ -2993,13 +4438,28 @@ r2=multiprocessing.Queue()
 r2.put(trackselected)
 r3=multiprocessing.Queue()
 r3.put(Syncinfo)
+r4=multiprocessing.Queue()
 
-p=multiprocessing.Process(target=outsmp,args=(v1,v2,v3,v4,v5,q1,q2,q3,q4,q5,q6))
+def insmp3(s1,s2,s3,s4):
+	listen3=Listen3()
+	listen3.starting(s1,s2,s3,s4)
+
+s1=multiprocessing.Queue()
+s1.put(Sendinfo)
+s2=multiprocessing.Queue()
+s2.put(trackselected)
+s3=multiprocessing.Queue()
+s3.put(Syncinfo)
+s4=multiprocessing.Queue()
+
+p=multiprocessing.Process(target=outsmp,args=(v1,v2,v3,v4,v5,v6,q1,q2,q3,q4,q5,q6))
 p.start()
-q=multiprocessing.Process(target=insmp,args=(w1,w2))
-q.start()
-q2=multiprocessing.Process(target=insmp2,args=(r1,r2,r3))
-q2.start()
+pq=multiprocessing.Process(target=insmp,args=(w1,w2))
+pq.start()
+pq2=multiprocessing.Process(target=insmp2,args=(r1,r2,r3,r4))
+pq2.start()
+pq3=multiprocessing.Process(target=insmp3,args=(s1,s2,s3,s4))
+pq3.start()
 
 try:
 	seq=SequencerApp()
