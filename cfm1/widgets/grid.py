@@ -2,6 +2,8 @@ from kivy.lang import Builder
 from kivy.factory import Factory as F
 from kivy.properties import NumericProperty, ListProperty
 from kivy.graphics import Color, Mesh, RenderContext
+from kivy.clock import Clock
+import numpy as np
 
 
 FS = """
@@ -37,6 +39,8 @@ class Grid(F.Widget):
             use_parent_modelview=True,
             fs=FS, vs=VS
         )
+        self.sync_vertices = Clock.create_trigger(
+            self._sync_vertices, -1)
         super(Grid, self).__init__(**kwargs)
 
     def on_size(self, _, size):
@@ -81,7 +85,10 @@ class Grid(F.Widget):
                 ]
                 i += 4
 
-        self.vertices = vertices
+        self.vertices = vertices = np.array(vertices, dtype="float32")
+        self.vertices_sh = self.vertices.reshape(
+            (self.cols * self.rows, 4, 8)
+        )
 
         if hasattr(self, "g_mesh"):
             self.g_mesh.vertices = vertices
@@ -102,17 +109,14 @@ class Grid(F.Widget):
                     fmt=vertex_format
                 )
 
+    def _sync_vertices(self, *largs):
+        self.g_mesh.vertices = self.vertices
+
     def set_color(self, ix, iy, color):
-        i0 = (ix + (iy * self.cols)) * 32 + 4
-        v = self.vertices
-        v[i0:i0 + 4] = color
-        i0 += 8
-        v[i0:i0 + 4] = color
-        i0 += 8
-        v[i0:i0 + 4] = color
-        i0 += 8
-        v[i0:i0 + 4] = color
-        self.g_mesh.vertices = v
+        v = self.vertices_sh
+        i0 = ix + (iy * self.cols)
+        v[i0, :, -4:] = color
+        self.sync_vertices()
 
     def get_coords_at(self, x, y):
         sqsize = float(self.sqsize)

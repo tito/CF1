@@ -20,5 +20,6 @@ class CFMSequencerGrid(Grid):
     def on_grid_up(self, ix, iy, data):
         self.set_color(ix, iy, ACTIVE_COLOR)
 
+
 class CFMSequencer(F.GridLayout):
     pass
