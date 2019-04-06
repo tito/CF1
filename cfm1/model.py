@@ -1,4 +1,5 @@
-from kivy.properties import NumericProperty, ListProperty
+from kivy.properties import (
+    NumericProperty, ListProperty, StringProperty)
 from kivy.event import EventDispatcher
 from cfm1.config import STEPS_MAX
 
@@ -21,6 +22,9 @@ class CFMModel(EventDispatcher):
 
     # current track y
     ystart = NumericProperty(12 * 3)
+
+    # current encoder target
+    encoder_target = StringProperty(None, allownone=True)
 
 
 model = CFMModel()

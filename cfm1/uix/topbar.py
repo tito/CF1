@@ -46,16 +46,20 @@ Builder.load_string("""
         size_hint_x: None
         width: dp(90)
         on_press: ctl.stop()
-    CFMButton:
+    CFMToggleButton:
         text: str(model.bpm)
         size_hint_x: None
         width: dp(60)
+        state: "down" if (model.encoder_target == "bpm") else "normal"
         on_press: ctl.toggle_bpm()
-    CFMButton:
+        group: "encoder"
+    CFMToggleButton:
         text: "4.0"
         size_hint_x: None
         width: dp(95)
+        state: "down" if (model.encoder_target == "track_length") else "normal"
         on_press: ctl.toggle_track_length()
+        group: "encoder"
     CFMButton:
         text: "TOOLS"
         on_press: app.show_dropdown("CFMToolDropDown", self)

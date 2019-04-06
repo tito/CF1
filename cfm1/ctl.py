@@ -1,4 +1,5 @@
 from cfm1.model import model
+from cfm1.config import STEPS_MAX, KEYRANGE
 
 class CFMController(object):
     model = None
@@ -10,10 +11,16 @@ class CFMController(object):
         pass
 
     def toggle_bpm(self):
-        pass
+        if model.encoder_target != "bpm":
+            model.encoder_target = "bpm"
+        else:
+            model.encoder_target = None
 
     def toggle_track_length(self):
-        pass
+        if model.encoder_target != "track_length":
+            model.encoder_target = "track_length"
+        else:
+            model.encoder_target = None
 
     def tool_clear(self):
         pass
@@ -70,5 +77,19 @@ class CFMController(object):
         if note in track[step]:
             track[step].remove(note)
             return True
+
+    #
+    # encoder button
+    #
+    def encoder_changed(self, direction, pressed=False):
+        if model.encoder_target == "bpm":
+            model.bpm = max(40, min(300, model.bpm + direction))
+        elif model.encoder_target == "track_length":
+            pass
+        else:
+            if not pressed:
+                model.xstart = max(0, min(STEPS_MAX, model.xstart + direction))
+            else:
+                model.ystart = max(0, min(len(KEYRANGE), model.ystart + direction))
 
 ctl = CFMController()

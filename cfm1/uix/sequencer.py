@@ -15,8 +15,20 @@ Builder.load_string("""
     spacing: 2
     padding: 1
 
-<CFMSequencer>:
+<CFMSequenceTrackIndex>:
     rows: 1
+    spacing: 2
+    padding: 1
+
+<CFMSequencer>:
+    rows: 2
+    Label:
+        size_hint: None, None
+        size: dp(40), dp(40)
+        text: "T{}".format(model.track + 1)
+    CFMSequenceTrackIndex:
+        size_hint: 1, None
+        height: dp(40)
     CFMSequencerNoteRange:
         size_hint: None, None
         width: dp(40)
@@ -28,6 +40,24 @@ Builder.load_string("""
 COLOR_ACTIVE = (1., 1., 1., 1.)
 COLOR_DEFAULT = (0.2, 0.2, 0.2, 1.)
 COLOR_NOTE_LENGTH = (0.5, 0.5, 0.5, 1.)
+
+
+class CFMSequenceTrackIndex(F.GridLayout):
+    def __init__(self, **kwargs):
+        super(CFMSequenceTrackIndex, self).__init__(**kwargs)
+        model.bind(xstart=self.populate)
+        self.populate()
+
+    def populate(self, *largs):
+        self.clear_widgets()
+        for i in range(16):
+            ix = model.xstart + i
+            if ix % 4 == 0:
+                text = str(1 + ix // 4)
+            else:
+                text = '.'
+            lbl = F.Label(text=text)
+            self.add_widget(lbl)
 
 
 class CFMSequencerNoteRange(F.GridLayout):
@@ -48,6 +78,13 @@ class CFMSequencerNoteRange(F.GridLayout):
 
 
 class CFMSequencerGrid(Grid):
+    def __init__(self, **kwargs):
+        super(CFMSequencerGrid, self).__init__(**kwargs)
+        model.bind(
+            xstart=self.refresh_grid_full,
+            ystart=self.refresh_grid_full,
+            track=self.refresh_grid_full)
+
     def on_grid_down(self, ix, iy):
         data = {"iy": iy, "ix": ix}
         note = ctl.get_note_from_grid(ix, iy)
@@ -92,6 +129,10 @@ class CFMSequencerGrid(Grid):
                     color = COLOR_ACTIVE
                     notelength = max(notelength, note[2] - 1)
             self.set_color(ix, iy, color)
+
+    def refresh_grid_full(self, *largs):
+        for iy in range(0, 8):
+            self._refresh_grid(iy)
 
 
 class CFMSequencer(F.GridLayout):
