@@ -20,7 +20,7 @@ class CFM1(App):
         global_idmap["model"] = model
         global_idmap["ctl"] = controller
 
-        from cfm1.ui import CFMUI
+        from cfm1.uix.ui import CFMUI
         return CFMUI()
 
     def show_dropdown(self, name, wid):
