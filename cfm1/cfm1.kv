@@ -26,11 +26,13 @@
 #:set ICON_LOOP_ALT 59409
 #:set ICON_OK 59396
 
-<CFMButton@Button>:
+<CFMGenericButton@Button>:
     font_name: "data/fonts/Calibri.ttf"
+    always_release: True
+
+<CFMButton@CFMGenericButton>:
     size_hint_y: None
     height: dp(60)
-    always_release: True
 
 <CFMIconButton@Button>:
     font_name: "data/fonts/Icons.ttf"

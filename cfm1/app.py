@@ -14,11 +14,11 @@ class CFM1(App):
         global app
         app = self
 
-        from cfm1.ctl import controller
+        from cfm1.ctl import ctl
         from cfm1.model import model
 
         global_idmap["model"] = model
-        global_idmap["ctl"] = controller
+        global_idmap["ctl"] = ctl
 
         from cfm1.uix.ui import CFMUI
         return CFMUI()

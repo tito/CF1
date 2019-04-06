@@ -1,7 +1,9 @@
 from kivy.lang import Builder
 from kivy.factory import Factory as F
 from kivy.properties import NumericProperty, ListProperty
-from kivy.graphics import Color, Mesh, RenderContext
+from kivy.graphics import (
+    Color, Mesh, RenderContext, PushMatrix,
+    PopMatrix, Translate)
 from kivy.clock import Clock
 import numpy as np
 
@@ -30,10 +32,9 @@ class Grid(F.Widget):
     rows = NumericProperty(8)
     spacing = NumericProperty("2dp")
     sqcolor = ListProperty([0.2, 0.2, 0.2, 1.])
-    sqsize = 0
+    sqsize = NumericProperty(10)
 
     def __init__(self, **kwargs):
-        self.sqsize = 1
         self.canvas = RenderContext(
             use_parent_projection=True,
             use_parent_modelview=True,
@@ -45,6 +46,12 @@ class Grid(F.Widget):
 
     def on_size(self, _, size):
         self.build_grid()
+
+    def on_pos(self, _, pos):
+        if not hasattr(self, "g_translate"):
+            return
+        self.g_translate.x = self.x
+        self.g_translate.y = self.y
 
     def build_grid(self):
         vertices = []
@@ -102,12 +109,15 @@ class Grid(F.Widget):
 
             with self.canvas:
                 Color(1., 1., 1., 1.)
+                PushMatrix()
+                self.g_translate = Translate(self.x, self.y, 1.)
                 self.g_mesh = Mesh(
                     vertices=vertices,
                     indices=indices,
                     mode="triangles",
                     fmt=vertex_format
                 )
+                PopMatrix()
 
     def _sync_vertices(self, *largs):
         self.g_mesh.vertices = self.vertices
