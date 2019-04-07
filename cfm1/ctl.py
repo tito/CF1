@@ -2,8 +2,6 @@ from cfm1.model import model
 from cfm1.config import STEPS_MAX, KEYRANGE
 
 class CFMController(object):
-    model = None
-
     def play(self):
         pass
 
@@ -85,7 +83,9 @@ class CFMController(object):
         if model.encoder_target == "bpm":
             model.bpm = max(40, min(300, model.bpm + direction))
         elif model.encoder_target == "track_length":
-            pass
+            length = model.tracks_length[model.track]
+            length = max(1, min(STEPS_MAX, length + direction))
+            model.tracks_length[model.track] = length
         else:
             if not pressed:
                 model.xstart = max(0, min(STEPS_MAX, model.xstart + direction))

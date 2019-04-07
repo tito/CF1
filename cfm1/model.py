@@ -11,6 +11,9 @@ class CFMModel(EventDispatcher):
     # current selected track
     track = NumericProperty(0)
 
+    # track length
+    tracks_length = ListProperty([4] * 8)
+
     # [channel 1, 2, ..][step 1, 2, ..][note 1, 2...]
     # note = [note, status, length]
     notes = ListProperty([
@@ -25,6 +28,9 @@ class CFMModel(EventDispatcher):
 
     # current encoder target
     encoder_target = StringProperty(None, allownone=True)
+
+    # play step
+    play_step = NumericProperty(0)
 
 
 model = CFMModel()

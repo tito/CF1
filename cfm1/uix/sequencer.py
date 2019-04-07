@@ -1,5 +1,6 @@
 from kivy.lang import Builder
 from kivy.factory import Factory as F
+from kivy.properties import NumericProperty
 from cfm1.widgets.grid import Grid
 from cfm1.ctl import ctl
 from cfm1.model import model
@@ -9,6 +10,22 @@ Builder.load_string("""
 <CFMSequencerNoteRangeButton@CFMGenericButton>:
     odd: False
     background_color: (0.2, 0.2, 0.2, 1) if root.odd else (1, 1, 1, 1)
+
+<CFMSequencerTrackLengthBar>:
+    canvas.before:
+        Color:
+            rgba: 1, 0, 0, 1
+        Rectangle:
+            pos: self.value * (self.width / 16) - dp(1), 0
+            size: dp(2), self.height
+
+<CFMSequencerPlayBar>:
+    canvas.before:
+        Color:
+            rgba: 0, 0, 1, 1
+        Rectangle:
+            pos: self.value * (self.width / 16) - dp(1), 0
+            size: dp(2), self.height
 
 <CFMSequencerNoteRange>:
     cols: 1
@@ -33,13 +50,25 @@ Builder.load_string("""
         size_hint: None, None
         width: dp(40)
         height: seq.sqsize * 8
-    CFMSequencerGrid:
-        id: seq
+    RelativeLayout:
+        CFMSequencerGrid:
+            id: seq
+        CFMSequencerTrackLengthBar:
+            value: model.tracks_length[model.track] * model.zoom - model.xstart
+        CFMSequencerPlayBar:
+            value: model.play_step - model.xstart
 """)
 
 COLOR_ACTIVE = (1., 1., 1., 1.)
 COLOR_DEFAULT = (0.2, 0.2, 0.2, 1.)
 COLOR_NOTE_LENGTH = (0.5, 0.5, 0.5, 1.)
+
+
+class CFMSequencerPlayBar(F.Widget):
+    value = NumericProperty(0)
+
+class CFMSequencerTrackLengthBar(F.Widget):
+    value = NumericProperty(0)
 
 
 class CFMSequenceTrackIndex(F.GridLayout):

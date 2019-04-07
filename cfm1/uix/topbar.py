@@ -54,7 +54,7 @@ Builder.load_string("""
         on_press: ctl.toggle_bpm()
         group: "encoder"
     CFMToggleButton:
-        text: "4.0"
+        text: str(model.tracks_length[model.track])
         size_hint_x: None
         width: dp(95)
         state: "down" if (model.encoder_target == "track_length") else "normal"
