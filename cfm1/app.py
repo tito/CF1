@@ -5,6 +5,7 @@ from kivy.properties import NumericProperty
 from kivy.lang import global_idmap
 from cfm1.ctl import ctl
 from cfm1.model import model
+from cfm1.service import service
 
 app = None
 
@@ -17,10 +18,15 @@ class CFM1(App):
         global_idmap["model"] = model
         global_idmap["ctl"] = ctl
 
+        service.start()
+
         self.bind_keyboard()
 
         from cfm1.uix.ui import CFMUI
         return CFMUI()
+
+    def on_stop(self):
+        service.join()
 
     def show_dropdown(self, name, wid):
         if hasattr(self, name):

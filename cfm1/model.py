@@ -1,7 +1,7 @@
 from kivy.properties import (
     NumericProperty, ListProperty, StringProperty)
 from kivy.event import EventDispatcher
-from cfm1.config import STEPS_MAX
+from cfm1.config import STEPS_MAX, TRACKS_MAX
 
 
 class CFMModel(EventDispatcher):
@@ -12,13 +12,13 @@ class CFMModel(EventDispatcher):
     track = NumericProperty(0)
 
     # track length
-    tracks_length = ListProperty([4] * 8)
+    tracks_length = ListProperty([64] * TRACKS_MAX)
 
     # [channel 1, 2, ..][step 1, 2, ..][note 1, 2...]
     # note = [note, status, length]
     notes = ListProperty([
         [[] for x in range(STEPS_MAX)]
-        for x in range(8)])
+        for x in range(TRACKS_MAX)])
 
     # current sequencer range
     xstart = NumericProperty(0)

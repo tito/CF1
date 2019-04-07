@@ -51,6 +51,14 @@ GPIO_JACKSTART = 12
 SUBDIVISION = 4
 MEASURES = 64
 STEPS_MAX = MEASURES * SUBDIVISION
+TRACKS_MAX = 8
+
+# data index for note
+NOTE_PITCH = 0
+NOTE_STATUS = 1
+NOTE_LENGTH = 2
+NOTE_INFO = 3
+
 
 # load and configure kivy
 from kivy.config import Config

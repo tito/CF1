@@ -1,5 +1,9 @@
 from cfm1.model import model
-from cfm1.config import STEPS_MAX, KEYRANGE
+from cfm1.config import (
+    STEPS_MAX, KEYRANGE,
+    NOTE_PITCH, NOTE_STATUS, NOTE_LENGTH, NOTE_INFO)
+from cfm1.service import service
+
 
 class CFMController(object):
     def play(self):
@@ -51,45 +55,67 @@ class CFMController(object):
     def get_current_track(self):
         return model.notes[model.track]
 
-    def create_note_from_grid(self, ix, iy, track=None):
-        if track is None:
-            track = self.get_current_track()
-        note = [iy + model.ystart, None, 1]
+    def set_bpm(self, bpm):
+        model.bpm = bpm
+        service.sock_seq.send_json(("BPM", bpm))
+
+    def set_track_length(self, track, length):
+        model.tracks_length[track] = length
+        service.sock_seq.send_json(("TRACK_LENGTH", track, length))
+
+    def set_note_length(self, note, length):
+        if note[NOTE_LENGTH] == length:
+            return
+        note[NOTE_LENGTH] = length
+        service.sock_seq.send_json(("NOTEUPD", note))
+
+    def add_note(self, note):
+        service.sock_seq.send_json(("NOTEADD", note))
+
+    def remove_note(self, note):
+        service.sock_seq.send_json(("NOTEDEL", note))
+
+    def create_note_from_grid(self, ix, iy):
+        track = self.get_current_track()
         step = model.xstart + ix
+        # note = pitch, state, length, (track, step)
+        note = [iy + model.ystart, None, 1, (model.track, step)]
         track[step].append(note)
+        self.add_note(note)
         return note
 
-    def get_note_from_grid(self, ix, iy, track=None):
-        if track is None:
-            track = self.get_current_track()
+    def get_note_from_grid(self, ix, iy):
+        track = self.get_current_track()
         step = model.xstart + ix
         iy += model.ystart
         for note in track[step]:
             if note[0] == iy:
                 return note
 
-    def remove_note_from_grid(self, ix, note, track=None):
-        if track is None:
-            track = self.get_current_track()
+    def remove_note_from_grid(self, ix, note):
+        track = self.get_current_track()
         step = model.xstart + ix
         if note in track[step]:
             track[step].remove(note)
+            self.remove_note(note)
             return True
 
     #
     # encoder button
     #
+
     def encoder_changed(self, direction, pressed=False):
         if model.encoder_target == "bpm":
-            model.bpm = max(40, min(300, model.bpm + direction))
+            self.set_bpm(max(40, min(300, model.bpm + direction)))
         elif model.encoder_target == "track_length":
             length = model.tracks_length[model.track]
             length = max(1, min(STEPS_MAX, length + direction))
-            model.tracks_length[model.track] = length
+            self.set_track_length(model.track, length)
         else:
             if not pressed:
                 model.xstart = max(0, min(STEPS_MAX, model.xstart + direction))
             else:
                 model.ystart = max(0, min(len(KEYRANGE), model.ystart + direction))
+
 
 ctl = CFMController()

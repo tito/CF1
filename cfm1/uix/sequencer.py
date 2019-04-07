@@ -130,8 +130,7 @@ class CFMSequencerGrid(Grid):
             return
         if data["iy"] != iy:
             return
-        note = data["note"]
-        note[2] = max(1, ix - data["ix"] + 1)
+        ctl.set_note_length(data["note"], max(1, ix - data["ix"] + 1))
         self._refresh_grid(iy)
 
     def on_grid_up(self, ix, iy, data):
