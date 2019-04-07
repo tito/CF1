@@ -1,4 +1,6 @@
 import zmq
+import rtmidi
+import mido
 from time import sleep
 from decimal import Decimal
 from time import monotonic, sleep
@@ -7,8 +9,38 @@ from cfm1.config import (
     NOTE_PITCH, NOTE_STATUS, NOTE_LENGTH, NOTE_INFO)
 
 
-def send_note(trackidx, note):
+# open midi
+midiout = rtmidi.MidiOut()
+port = mido.open_output(midiout.get_ports()[-1])
+
+
+notes_to_stop = []
+
+def send_note_on(note):
+    trackidx, step = note[NOTE_INFO]
     print("{}: {}".format(trackidx, note))
+    msg = mido.Message(
+        "note_on",
+        note=note[NOTE_PITCH] + 24,
+        channel=trackidx + 1)
+    port.send(msg)
+    print("ON {}", note[NOTE_PITCH] + 24)
+
+    note[NOTE_STATUS] = note[NOTE_LENGTH]
+    print(note)
+    notes_to_stop.append(note)
+
+
+def send_note_off(note):
+    trackidx, step = note[NOTE_INFO]
+    msg = mido.Message(
+        "note_off",
+        note=note[NOTE_PITCH] + 24,
+        channel=trackidx + 1)
+    port.send(msg)
+    print("OFF {}", note[NOTE_PITCH] + 24)
+
+    notes_to_stop.remove(note)
 
 
 def run():
@@ -20,7 +52,7 @@ def run():
     sockout.connect("ipc://sequencerstatus")
 
     # prepare data
-    play = True
+    play = False
     bpm = Decimal(120)
     precision = Decimal(16)
     track_length = [64] * TRACKS_MAX
@@ -28,7 +60,7 @@ def run():
         [[] for x in range(STEPS_MAX)]
         for x in range(TRACKS_MAX)]
     nextcall = monotonic()
-    step_index = 0
+    step_index = -1
 
     try:
         sockout.send_json(("READY", ))
@@ -44,7 +76,7 @@ def run():
                     bpm = Decimal(args[0])
 
                 elif cmd == "TRACK_LENGTH":
-                    track_length[args[1]] = args[2]
+                    track_length[args[0]] = args[1]
 
                 elif cmd == "NOTEADD":
                     note = args[0]
@@ -66,9 +98,9 @@ def run():
                     track, step = note[NOTE_INFO]
                     step_notes = notes[track][step]
                     for step_note in step_notes:
-                        if step_note[NOTE_PITCH] == note[NOTE_PITCH]:
+                        if step_note[NOTE_PITCH] != note[NOTE_PITCH]:
                             continue
-                        step_notes[NOTE_LENGTH] = note[NOTE_LENGTH]
+                        step_note[NOTE_LENGTH] = note[NOTE_LENGTH]
                         break
 
                 elif cmd == "START":
@@ -76,7 +108,7 @@ def run():
 
                 elif cmd == "STOP":
                     play = False
-                    step_index = 0
+                    step_index = -1
 
                 elif cmd == "PAUSE":
                     play = False
@@ -87,14 +119,25 @@ def run():
             # Run the sequencer
             interval = float(60 / bpm / precision)
             nextcall = nextcall + interval
-            step_index += 1
 
             # Play the sequence
             if play:
+                step_index = (step_index + 1) % STEPS_MAX
+                print("[SEQ] Play {}".format(step_index))
+
+                # Stop previous note if needed
+                to_delete = []
+                for note in notes_to_stop:
+                    note[NOTE_STATUS] -= 1
+                    if note[NOTE_STATUS] == 0:
+                        send_note_off(note)
+                for note in to_delete:
+                    notes_to_stop.remove(note)
+
                 for trackidx, track in enumerate(notes):
                     step = step_index % track_length[trackidx]
                     for note in track[step]:
-                        send_note(trackidx, note)
+                        send_note_on(note)
 
             # Check for the next loop
             now = monotonic()

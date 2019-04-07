@@ -7,10 +7,12 @@ from cfm1.service import service
 
 class CFMController(object):
     def play(self):
-        pass
+        model.play = True
+        service.sock_seq.send_json(("START", ))
 
     def stop(self):
-        pass
+        model.play = False
+        service.sock_seq.send_json(("STOP", ))
 
     def toggle_bpm(self):
         if model.encoder_target != "bpm":
