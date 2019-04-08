@@ -41,20 +41,20 @@ Builder.load_string("""
     rows: 2
     Label:
         size_hint: None, None
-        size: dp(40), dp(40)
+        size: dp(47), dp(40)
         text: "T{}".format(model.track + 1)
     CFMSequenceTrackIndex:
         size_hint: 1, None
         height: dp(40)
     CFMSequencerNoteRange:
         size_hint: None, None
-        width: dp(40)
+        width: dp(47)
         height: seq.sqsize * 8
     RelativeLayout:
         CFMSequencerGrid:
             id: seq
         CFMSequencerTrackLengthBar:
-            value: model.tracks_length[model.track] * model.zoom - model.xstart
+            value: model.tracks_length[model.track] // model.zoom - model.xstart
         CFMSequencerPlayBar:
             value: (model.seq_step_idx % model.tracks_length[model.track]) // model.zoom - model.xstart
 """)
@@ -66,6 +66,7 @@ COLOR_NOTE_LENGTH = (0.5, 0.5, 0.5, 1.)
 
 class CFMSequencerPlayBar(F.Widget):
     value = NumericProperty(0)
+
 
 class CFMSequencerTrackLengthBar(F.Widget):
     value = NumericProperty(0)
