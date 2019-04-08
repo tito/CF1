@@ -43,6 +43,11 @@ def send_note_off(note):
     notes_to_stop.remove(note)
 
 
+def send_note_off_all():
+    for note in notes_to_stop[:]:
+        send_note_off(note)
+
+
 def run():
     context = zmq.Context()
     sockin = context.socket(zmq.PULL)
@@ -109,6 +114,8 @@ def run():
                 elif cmd == "STOP":
                     play = False
                     step_index = -1
+                    send_note_off_all()
+                    sockout.send_json(("STEP", 0))
 
                 elif cmd == "PAUSE":
                     play = False
@@ -123,6 +130,7 @@ def run():
             # Play the sequence
             if play:
                 step_index = (step_index + 1) % STEPS_MAX
+                sockout.send_json(("STEP", step_index))
                 print("[SEQ] Play {}".format(step_index))
 
                 # Stop previous note if needed

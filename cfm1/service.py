@@ -1,6 +1,7 @@
 import zmq
 from multiprocessing import Process
 from kivy.clock import Clock
+from cfm1.model import model
 
 
 class ServiceController(object):
@@ -31,7 +32,10 @@ class ServiceController(object):
         while sock_seq_in.poll(timeout=1):
             msg = sock_seq_in.recv_json()
             cmd, args = msg[0], msg[1:]
-            print("Sequencer: {}: {}".format(cmd, args))
+            if cmd == "STEP":
+                model.seq_step_idx = args[0]
+            else:
+                print("Unhandled sequencer: {}: {}".format(cmd, args))
 
 
 

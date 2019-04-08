@@ -56,7 +56,7 @@ Builder.load_string("""
         CFMSequencerTrackLengthBar:
             value: model.tracks_length[model.track] * model.zoom - model.xstart
         CFMSequencerPlayBar:
-            value: model.play_step - model.xstart
+            value: (model.seq_step_idx % model.tracks_length[model.track]) // model.zoom - model.xstart
 """)
 
 COLOR_ACTIVE = (1., 1., 1., 1.)
@@ -143,7 +143,7 @@ class CFMSequencerGrid(Grid):
         track = ctl.get_current_track()
         notelength = 0
         for ix in range(16):
-            step = model.xstart + ix
+            step = model.xstart + (ix * model.zoom)
             notey = model.ystart + iy
             notes = track[step]
 

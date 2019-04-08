@@ -32,5 +32,8 @@ class CFMModel(EventDispatcher):
     # play step
     play_step = NumericProperty(0)
 
+    # sequencer step idx
+    seq_step_idx = NumericProperty(0)
+
 
 model = CFMModel()

@@ -79,7 +79,7 @@ class CFMController(object):
 
     def create_note_from_grid(self, ix, iy):
         track = self.get_current_track()
-        step = model.xstart + ix
+        step = model.xstart + (ix * model.zoom)
         # note = pitch, state, length, (track, step)
         note = [iy + model.ystart, None, 1, (model.track, step)]
         track[step].append(note)
@@ -88,7 +88,7 @@ class CFMController(object):
 
     def get_note_from_grid(self, ix, iy):
         track = self.get_current_track()
-        step = model.xstart + ix
+        step = model.xstart + (ix * model.zoom)
         iy += model.ystart
         for note in track[step]:
             if note[0] == iy:
@@ -96,7 +96,7 @@ class CFMController(object):
 
     def remove_note_from_grid(self, ix, note):
         track = self.get_current_track()
-        step = model.xstart + ix
+        step = model.xstart + (ix * model.zoom)
         if note in track[step]:
             track[step].remove(note)
             self.remove_note(note)
