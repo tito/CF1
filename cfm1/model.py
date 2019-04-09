@@ -29,11 +29,26 @@ class CFMModel(EventDispatcher):
     # current encoder target
     encoder_target = StringProperty(None, allownone=True)
 
-    # play step
-    play_step = NumericProperty(0)
-
     # sequencer step idx
     seq_step_idx = NumericProperty(0)
+
+    # config
+    sendinfo = ListProperty([])
+    # [Port]
+    # [1, 2, 3, 4, 5, 6, 7]
+    # 1: Channel
+    # 3+4: CV Pitch
+    # 4+5: CV Gate
+    # 6: Voltage 0-10(5) / -5 to 5(0)
+    # 7: Port USB(1) / DIN(2)
+
+    # Syncinfo
+    # [1, 2, 3, 4, 5]
+    # 1: Midi DYN sync ON(1) / OFF(0)
+    # 2: Midi USB sync ON(1) / OFF(0)
+    # 3: Clock PPQ 96(6.4) / 48(3.2)
+    # 4: Midi USB PPQ 24(1) / 48(2)
+    # 5: Midi USB IN(1) / OUT(0)
 
 
 model = CFMModel()

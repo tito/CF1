@@ -7,9 +7,16 @@ from cfm1.model import model
 from cfm1.config import KEYRANGE
 
 Builder.load_string("""
-<CFMSequencerNoteRangeButton@CFMGenericButton>:
+<CFMSequencerNoteRangeLabel@CFMLabel>:
+    font_size: dp(18)
     odd: False
-    background_color: (0.2, 0.2, 0.2, 1) if root.odd else (1, 1, 1, 1)
+    color: (0, 0, 0, 1) if not root.odd else (0.8, 0.8, 0.8, 1)
+    canvas.before:
+        Color:
+            rgba: (0, 0, 0, 1) if root.odd else (0.8, 0.8, 0.8, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 <CFMSequencerTrackLengthBar>:
     canvas.before:
@@ -43,13 +50,17 @@ Builder.load_string("""
         size_hint: None, None
         size: dp(47), dp(40)
         text: "T{}".format(model.track + 1)
+        font_size: dp(22)
+
     CFMSequenceTrackIndex:
         size_hint: 1, None
         height: dp(40)
+
     CFMSequencerNoteRange:
         size_hint: None, None
         width: dp(47)
         height: seq.sqsize * 8
+
     RelativeLayout:
         CFMSequencerGrid:
             id: seq
@@ -79,32 +90,39 @@ class CFMSequenceTrackIndex(F.GridLayout):
         self.populate()
 
     def populate(self, *largs):
-        self.clear_widgets()
+        if not self.children:
+            for i in range(16):
+                self.add_widget(F.CFMLabel())
+
         for i in range(16):
+            lbl = self.children[15 - i]
             ix = model.xstart + i
             if ix % 4 == 0:
                 text = str(1 + ix // 4)
             else:
                 text = '.'
-            lbl = F.Label(text=text)
-            self.add_widget(lbl)
+            lbl.text = text
 
 
 class CFMSequencerNoteRange(F.GridLayout):
     def __init__(self, **kwargs):
         super(CFMSequencerNoteRange, self).__init__(**kwargs)
         model.bind(ystart=self.populate)
+        F.CFMSequencerNoteRangeLabel()
         self.populate()
 
     def populate(self, *largs):
-        F.CFMSequencerNoteRangeButton()
-        self.clear_widgets()
-        for y in reversed(range(8)):
+        children = self.children
+        if not children:
+            for i in range(8):
+                self.add_widget(F.CFMSequencerNoteRangeLabel())
+
+        for y in range(8):
             iy = y + model.ystart
             key = KEYRANGE[iy]
-            btn = F.CFMSequencerNoteRangeButton(
-                text=key[0], odd=not key[1])
-            self.add_widget(btn)
+            lbl = children[7 - y]
+            lbl.text = key[0]
+            lbl.odd = not key[1]
 
 
 class CFMSequencerGrid(Grid):
